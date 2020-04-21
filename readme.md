@@ -82,7 +82,7 @@ The following diagram illustrates the flow of RiboDiPA pipeline.
 
 ![RiboDiPA diagram](http://bioinfo.stats.northwestern.edu/~jzwang/RiboDiPA/Figure2.png)
 
-<img src="http://bioinfo.stats.northwestern.edu/~jzwang/RiboDiPA/Figure2.png" width="200" height="100">
+<img src="http://bioinfo.stats.northwestern.edu/~jzwang/RiboDiPA/Figure2.png" width="1000" height="800">
 
 ----------------------
 
