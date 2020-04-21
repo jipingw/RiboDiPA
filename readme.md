@@ -82,6 +82,8 @@ The following diagram illustrates the flow of RiboDiPA pipeline.
 <p align="center">
 <img src="http://bioinfo.stats.northwestern.edu/~jzwang/RiboDiPA/Figure2.png" width="800" height="350">
 </p>
+
+
 ----------------------
 ## RiboDiPA functions
 
