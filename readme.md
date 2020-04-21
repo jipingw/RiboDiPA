@@ -83,6 +83,7 @@ The following diagram illustrates the flow of RiboDiPA pipeline.
 <img src="http://bioinfo.stats.northwestern.edu/~jzwang/RiboDiPA/Figure2.png" width="800" height="350">
 
 ----------------------
+## RiboDiPA functions
 
 The following vignette is intended to provide example codes for running
 RiboDiPA R package. It presumes that you have successfully installed
