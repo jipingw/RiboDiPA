@@ -80,7 +80,7 @@ RiboDiPA R package contains three major functions.
 The following diagram illustrates the flow of RiboDiPA pipeline.
 
 <p align="center">
-<img src="http://bioinfo.stats.northwestern.edu/~jzwang/RiboDiPA/Figure2.png" width="780" height="350">
+<img src="http://bioinfo.stats.northwestern.edu/~jzwang/RiboDiPA/Figure2.png" width="700" height="350">
 </p>
 
 
