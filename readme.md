@@ -69,8 +69,8 @@ RiboDiPA R package contains three major functions.
 
 4.  **Differential pattern analysis**: perform the differential pattern
     analysis on the data, output statistical significance including
-    \\(p\\)-value and \\(q\\)-value together with a supplementary
-    statistics \\(T\\)-value. The \\(T\\)-value can be used to identify
+    p-value and q-value together with a supplementary
+    statistics T-value. The T-value can be used to identify
     genes that contain larger regions of differential codons/bins among
     the significant genes.
 
@@ -195,11 +195,11 @@ The function `RiboDiPA` performs the differential pattern analysis. It
 first normalizes the Ribo-seq footprint data withint each gene, then
 pools the normalized data from all genesfor parameter estimations and
 differential abundance test. For each gene, RiboDiPA outputs a
-gene-level \\(p\\)-value, and further, an adjusted \\(p\\)-value with
+gene-level p-value, and further, an adjusted p-value with
 multiple testing correction (method can be speficied) and a
-\\(q\\)-value (from `qvalue` package) for false discovery rate control.
+q-value (from `qvalue` package) for false discovery rate control.
 
-RiboDiPA also ouputs a supplementary measure called \\(T\\)-value, which
+RiboDiPA also ouputs a supplementary measure called T-value, which
 is defined to be 1-cosine of the angle between the first right singular
 vectors of the footprint matrices of the two conditions under
 comparison. It can be used to identify genes with larger magnitude of
@@ -217,6 +217,6 @@ This function `plot_track` visualizes the Ribo-seq footprint of the
 genes specified in the `genes.list`. For replicates marked as `1` in
 `coldata` (see `RiboDiPA` function), the tracks are colored blue and
 replicates marked as `2` are colored red. Differential bins are colored
-black, with bin-level adjusted \\(p\\)-value annotated underneath the
+black, with bin-level adjusted p-value annotated underneath the
 the track of the last replicate. If `genes.list` is not specified, all
 genes with significant differential pattern will be output.
