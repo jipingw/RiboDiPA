@@ -1,9 +1,9 @@
 RiboDiPA R package 
 ===========================================================================================================
 
-#### Keren Li, Matthew Hope, Xiaozhong A. Wang, Ji-Ping Wang {.author}
+#### Keren Li, Matthew Hope, Xiaozhong A. Wang, Ji-Ping Wang 
 
-#### 02/20/2020 {.date}
+#### 04/20/2020 
 
 #### Maintainer: Ji-Ping Wang, \<[jzwang@northwestern.edu](mailto:jzwang@northwestern.edu)\>
 
@@ -79,8 +79,6 @@ RiboDiPA R package contains three major functions.
 
 The following diagram illustrates the flow of RiboDiPA pipeline.
 
-
-![RiboDiPA diagram](http://bioinfo.stats.northwestern.edu/~jzwang/RiboDiPA/Figure2.png)
 
 <img src="http://bioinfo.stats.northwestern.edu/~jzwang/RiboDiPA/Figure2.png" width="800" height="350">
 
