@@ -212,8 +212,8 @@ The function `RiboDiPA` performs the differential pattern analysis. It
 first normalizes the Ribo-seq footprint data withint each gene, then
 pools the normalized data from all genes for parameter estimations and
 differential abundance test. For each gene, RiboDiPA outputs a
-gene-level \(p\)-value, and further, an adjusted \(p\)-value with
-multiple testing correction (method can be speficied) and a \(q\)-value
+gene-level p-value, and further, an adjusted p-value with
+multiple testing correction (method can be speficied) and a q-value
 (from `qvalue` package) for false discovery rate control. `classlabel`
 is required to input to specify the comparison. The format should be a
 data.frame with at least a column `condition`, in which `1`’s stand for
@@ -221,7 +221,7 @@ reference condition, `2`’s stand for target condtion, `0`’s replicates
 is not invloved in the test. Rows of `classlabel` correspond to
 replicates.
 
-RiboDiPA also ouputs a supplementary measure called \(T\)-value, which
+RiboDiPA also ouputs a supplementary measure called T-value, which
 is defined to be 1-cosine of the angle between the first right singular
 vectors of the footprint matrices of the two conditions under
 comparison. It can be used to identify genes with larger magnitude of
@@ -252,6 +252,6 @@ This function `plot_test` visualizes the Ribo-seq bin-level footprint of
 the genes specified in the `genes.list`. For replicates marked as `1` in
 `classlabel` (see `RiboDiPA` function), the tracks are colored blue and
 replicates marked as `2` are colored red. Differential bins are colored
-black, with bin-level adjusted \(p\)-value annotated underneath the the
+black, with bin-level adjusted p-value annotated underneath the the
 track of the last replicate. If `genes.list` is not specified, all genes
 with significant differential pattern will be output.
