@@ -131,7 +131,8 @@ gtf_file <- list.files(path=system.file("extdata",package="RiboDiPA"),
 ``` r
 ## convert RPF reads into the P-site position on merged exons
 psite.mapping <- cbind(qwidth=20:32,psite=c(12,13,13,13,13,13,13,12,12,13,13,13,13))
-data.psite <- PsiteMapping(bam_file_list=bam_file_list, gtf_file=gtf_file, psite.mapping=psite.mapping, cores=NULL)
+data.psite <- PsiteMapping(bam_file_list=bam_file_list, gtf_file=gtf_file, 
+              psite.mapping=psite.mapping, cores=NULL)
 ```
 
 The function `PsiteMapping` returns a list of four elements: `coverage`,
