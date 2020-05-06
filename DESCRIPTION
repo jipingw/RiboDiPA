@@ -2,33 +2,20 @@ Package: RiboDiPA
 Type: Package
 Title: Ribosome differential pattern analysis
 Date: 2020-01-01
-Version: 0.1.0
+Version: 0.9.0
 Author: Keren Li and Jiping Wang
 Maintainer: Ji-Ping Wang <jzwang@northwestern.edu>
 Description: This package performs pattern similarity tests for Ribo-seq data with three components: P-site mapping, data binning, pattern similarity test.
 License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp (>= 1.0.2), 
-    data.table,
-    elitism,
-    methods,
-    S4Vectors,
-    IRanges,
-    GenomicRanges,
-    matrixStats,
-    reldist,
-    doParallel,
-    foreach,
-    parallel,
-    qvalue,
-    DESeq2
+Imports: Rcpp (>= 1.0.2), data.table, elitism, methods, S4Vectors,
+        IRanges, GenomicRanges, matrixStats, reldist, doParallel,
+        foreach, parallel, qvalue, DESeq2
 LinkingTo: Rcpp
-Depends: R (>= 3.5.0), 
-    Rsamtools,
-    GenomicFeatures,
-    GenomicAlignments
+Depends: R (>= 3.5.0), Rsamtools, GenomicFeatures, GenomicAlignments
 NeedsCompilation: yes
 RoxygenNote: 6.1.1
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
+Packaged: 2020-05-06 00:59:24 UTC; keren

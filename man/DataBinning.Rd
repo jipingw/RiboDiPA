@@ -12,7 +12,7 @@ DataBinning(data, bin.width = 0, zero.omit = F, bin.from.5UTR = T, cores = NULL)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{
-A list of P-site footprint matrices. In each element of the list, rows corrspond to replicates, columns corrspond to nucleotides.
+A list of P-site footprint matrices from \code{coverage} value of \code{PsiteMapping} function. In each element of the list, rows corrspond to replicates, columns corrspond to nucleotides.
 }
   \item{bin.width}{
 Binning width per bin. If specified, it is the number of codons merged per bin; if not specified, an adaptive binning width is used.

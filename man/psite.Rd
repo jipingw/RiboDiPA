@@ -4,10 +4,11 @@
 \title{P-site mapping
 }
 \description{
-This function computes P-sites of reads and read counts for all genes and samples.
+This function computes the corresponding P-site locations of all RPFs and the total RPF read counts for all genes and samples.
 }
 \usage{
-PsiteMapping(bam_file_list, gtf_file, cores=NULL)
+PsiteMapping(bam_file_list, gtf_file, psite.mapping="auto",
+cores=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -15,22 +16,31 @@ PsiteMapping(bam_file_list, gtf_file, cores=NULL)
   A vector of bam file names.
 }  \item{gtf_file}{
 Annotation file.
-}\item{cores}{
+}\item{psite.mapping}{
+For a string input or a user defined matrix assigning the P-site mapping rule or A-site mapping rule. Strings include: "center" for taking center of read as P/A-site, and "auto" for an optimal P-site offset computing.
+A user defined matrix should include two columns: "qwidth" and "psite". "qwidth" is the possible range of read length, "psite" is the corresponding P/A-site offset.
+}
+\item{cores}{
 The number of cores to use for parallel execution. If not specified, the number of cores is set to the value of \code{detectCores(logical = FALSE)}.
 }
 }
 \details{
-Since true RPFs only originate from ribosomes that are actively translating in coding regions, in cases where a gene has multiple splicing isoforms, it is difficult to distinguish which isoform an observed Ribo-seq read comes from. All exons from the same gene are concatenated into a total transcript in order to get a merged picture of translation. Then RPFs are mapped to a given gene into P-site positions.
-
-User can assign the P-site mapping rule or A-site mapping rule by redefine P/A-site rule function \code{.psite}, as needed. Input of \code{.psite} should be length of reads and output corresponding relative P/A-site position (position of P/A-site - position of first left position of read).
+All exons from the same gene are concatenated into a total transcript in order to get a merged picture of translation. Then RPFs are mapped with reference to the total transcript and the P-site positions are inferred accordingly.
+If `psite.mapping` is unspecified, a two-step algorithm on start codons of CDS is used to compute optimal P-site offsets based on data following Lauria et al (2018). First, the offset of each read length is defined as the distances between the first nucleotide of start codons and the nucleotide corresponding to the maximum found in the profiles of the start codons. The temporary global offset is defined to be the offset of the read length with maximum count. Next, for each read length, the adjusted offset is defined to be the one corresponding to the local maximum found in the profiles of the start codons closest to the temporary global offset.
 }
 \value{
-\item{coverage}{A List object of matrices. Each element is the P-site footprint of a gene. Rows corrspond to replicates, columns corrspond to nucleotides.
+\item{coverage}{A list object of matrices. Each element is a matrix representing the P-site footprints of a gene. Rows corrspond to replicates and columns corrspond to nucleotide location with reference to the total transcript.
 }
-\item{counts}{A Matrix object of read counts. Rows corrspond to genes, columns corrspond to replicates.}
+\item{counts}{A matrix object of read counts. Rows corrspond to genes and columns corrspond to replicates.}
+\item{exons}{A List object of matrices. Each element contains the relative start and end positions of exons in the gene with reference to the total transcript}\item{psite.mapping}{
+The P-site mapping rule or A-site mapping rule used.
+}
 }
 \author{
-Jiping Wang
+Keren Li,Ji-Ping Wang
+}
+\references{
+Lauria, F., Tebaldi, T., Bernabò, P., Groen, E., Gillingwater, T. H., & Viero, G. (2018). riboWaltz: Optimization of ribosome P-site positioning in ribosome profiling data. PLoS computational biology, 14(8), e1006169.
 }
 %\examples{
 %gtf_file <- "Saccharomyces_cerevisiae.R64-1-1.98.gtf"

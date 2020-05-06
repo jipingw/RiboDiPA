@@ -2,26 +2,26 @@
 \alias{plot_track}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Plotting ribosome per nucleotide footprints
+Plotting ribosome footprint data at per nucleotide level
 }
 \description{
-This function  visualizes the ribosome per nucleotide footprints with merged exons annotated.
+This function visualizes the ribosome footprint in the form of P-site frequency at per nucleotide level along the total transcript.
 }
 \usage{
-plot_track(data, genes.list, replicates=NULL, gtf_file)
+plot_track(data, genes.list, replicates=NULL,exons=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{
-Test result from \code{PsiteMapping} function.
+       Data object from \code{PsiteMapping} function.
 }  \item{genes.list}{
-Genes required visualization.
+     A list of genes for visualization.
 } \item{replicates}{
-Replicates required visualization.
-}\item{gtf_file}{
-Annotation file.
+    Names of the replicates for which the footprint to visualize. The default is for all.
+}\item{exons}{
+    If value is \code{TURE}, Ribo-seq footprint per exon of specified genes is also output.
 }
 }
 \value{
-Nucleotide footprint of genes.
+Visualizes the Ribo-seq per nucleotide footprint on merged exons of the genes and replicates specified. If \code{exons} is \code{TURE}, Ribo-seq footprint per exon of specified genes is also output.
 }
