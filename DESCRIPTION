@@ -2,7 +2,7 @@ Package: RiboDiPA
 Type: Package
 Title: Ribosome differential pattern analysis
 Date: 2020-01-01
-Version: 0.9.0
+Version: 0.1.0
 Author: Keren Li and Jiping Wang
 Maintainer: Ji-Ping Wang <jzwang@northwestern.edu>
 Description: This package performs pattern similarity tests for Ribo-seq data with three components: P-site mapping, data binning, pattern similarity test.
@@ -18,4 +18,4 @@ NeedsCompilation: yes
 RoxygenNote: 6.1.1
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
-Packaged: 2020-05-06 00:59:24 UTC; keren
+Packaged: 2020-07-29 19:41:24 UTC; keren

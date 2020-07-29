@@ -15,14 +15,14 @@ RiboDiPA(data, classlabel, method=c('gtxr','qvalue'))
   For list of named matrice input from \code{DataBinning} function. In each element of the list, rows corrspond to replicates, columns corrspond to bins.
 }
   \item{classlabel}{
-For matrix input: a DataFrame or data.frame with at least a column \code{condition}. In \code{condition}, \code{1}'s stand for reference condition, \code{2}'s stand for target condtion, \code{0}'s replicates is not invloved in the test. Rows of \code{classlabel} correspond to rows of \code{data}.
+For matrix input: a DataFrame or data.frame with at least a column \code{comparison}. In \code{comparison}, \code{1}'s stand for reference condition, \code{2}'s stand for target condtion, \code{0}'s replicates is not invloved in the test. Rows of \code{classlabel} correspond to rows of \code{data}.
 }
 \item{method}{
 For a 2-component character vector input: the first argument is the multiplicity correction method for codon/bin-level p-value adjustment. The second argument is the multiplicity correction method for gene-level p-value adjustment. Methods include: "qvalue" for q-value from \code{qvalue} pacakge, "gtxr", "holm", "hochberg", "hommel", "bonferroni", "BH", "BY","fdr", "none" from \code{elitism} package.
 }
 }
 \value{
- \item{codon}{A List object of codon/bin-level results. Each element of list is of a gene, containing codon/bin results columns: \code{pvalue}, \code{log2FoldChange}, and the adjusted p-value named by the first string in \code{method}.
+ \item{bin}{A List object of codon/bin-level results. Each element of list is of a gene, containing codon/bin results columns: \code{pvalue}, \code{log2FoldChange}, and the adjusted p-value named by the first string in \code{method}.
  }
  \item{gene}{A DataFrame object of gene-level results. It contains columns: \code{tvalue}, \code{pvalue}, and the adjusted p-value named by the second string in \code{method}.
  }
@@ -31,7 +31,7 @@ For a 2-component character vector input: the first argument is the multiplicity
 The same as  input \code{classlabel}.
 }
 \item{data}{
-subset of input \code{data}, including all genes reported in \code{codon} and \code{gene}.
+subset of input \code{data}, including all genes reported in \code{bin} and \code{gene}.
 }
 \item{method}{
 The same as  input \code{method}.

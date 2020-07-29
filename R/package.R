@@ -4,6 +4,7 @@
 PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",cores=NULL){
   options(warn=-1)
   names.sample <- sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", bam_file_list)
+  names.sample <- sub(".bam","",names.sample)
 
   # parse gtf file to create GRangesList object
   txdb <- makeTxDbFromGFF(gtf_file)
@@ -13,21 +14,7 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",cores=NUL
   all_genes <- all_genes[sapply(unique(runValue(strand(all_genes))),length)==1]
   all_genes <- all_genes[sapply(unique(runValue(seqnames(all_genes))),length)==1]
 
-  exons.merge <- NULL
-  for(gene in names(all_genes)){
-    single.gene <- all_genes[[gene]]
-    range.gene <- cbind(start(single.gene),end(single.gene))
-    range.gene2 <- .reduceself(range.gene)
-    range.gene2 <- .reduceself(range.gene2)
-
-    range.relative <- NULL
-    for(i in 1:nrow(range.gene)){
-      range.relative <- rbind(range.relative,c(start=.segcal(range.gene[i,1],range.gene2),
-                             end=.segcal(range.gene[i,2],range.gene2)))
-    }
-    rownames(range.relative) <- single.gene$exon_name
-    exons.merge[[gene]] <- range.relative
-  }
+  exons.merge <- lapply(all_genes,.ExonMerge)
 
   # merge overlapping exons
   all_genes <- IRanges::reduce(all_genes)
@@ -218,6 +205,7 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",cores=NUL
         }
         gal3[strand=='-',psite:=qwidth-psite-1]
         gal3[,center:=psitecal(cigar,start,psite)]
+        gal3 <- gal3[center>0,]
         gal3[,qwidth := 1][,width := 1][,njunc := 0][,cigar := "1M"][,start:=center
                          ][,end:=center][,psite:=NULL][,center:=NULL]
         gal3 <- makeGRangesFromDataFrame(gal3)
@@ -261,38 +249,22 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",cores=NUL
   return(ov)
 }
 
-.reduceself <- function(ints){
-  for(x in 1:nrow(ints)){
-    for(y in 1:nrow(ints)){
-      if(data.table::between(ints[x,1], ints[y,1], ints[y,2])){
-        ints[x,1] <- ints[y,1]
-        if(ints[y,2] > ints[x,2]){
-          ints[x,2] <- ints[y,2]
-        } else {
-          ints[y,2] <- ints[x,2]
-        }
-      }
-    }
-  }
-  tmp <- unique(ints, margin = 1)
-  res <- tmp[order(tmp[,1]),]
-  if(is.vector(res)){
-    res <- matrix(res,nrow=1)
-  }
-  return(res)
-}
 
 .segcal <- function(x,ints){
-  l <- sum(x>ints[,2])
-  if(!l){
-    result <- x-ints[1,1]+1
-  }else{
-    result <- sum(ints[1:l,2])-sum(ints[1:l,1])+(x-ints[l+1,1])+1
-  }
-  return(result)
+  l <- sum(x>=ints[,1])
+  cumints <- c(0,cumsum(ints[,2]))
+  return(cumints[l]+x-ints[l,1]+1)
 }
 
-
+.ExonMerge <- function(x){
+  range.gene <- cbind(start(x),end(x))
+  range.gene2 <- IRanges(start(x),end(x))
+  range.gene2 <- as.matrix(union(range.gene2,range.gene2))
+  range.relative <- matrix(vapply(range.gene, function(x) .segcal(x,range.gene2), numeric(1)),ncol=2)
+  rownames(range.relative) <- x$exon_name
+  colnames(range.relative) <- c("start","end")
+  return(range.relative)
+}
 #### data binning ###
 
 .app2exact.self <- function(n, p) {
@@ -324,15 +296,10 @@ DataBinning <- function(data, bin.width=0, zero.omit=F, bin.from.5UTR=T, cores=N
       p <- ncol(data1)
       # merge every 3 nt into a codon
       p.codon <- ceiling(p/3)
-      codon.size <- .app2exact.self(p,rep(1/p.codon,p.codon))
-      if(!bin.from.5UTR){
-        codon.size <- rev(codon.size)
-      }
-      codon.cum <- c(0,cumsum(codon.size))
-      data.codon <- matrix(0,nrow=n,ncol=p.codon)
-      for(j in 1:p.codon){
-        data.codon[,j] <- rowSums(matrix(data1[,(codon.cum[j]+1):(codon.cum[j+1])],nrow=n))
-      }
+      ifelse(bin.from.5UTR,
+             data.codon <- t(apply(data1,1, function(x) unname(tapply(x, (seq_along(x)-1) %/% 3, sum)))),
+             data.codon <- t(apply(data1,1, function(x) (unname(tapply(t(x), (seq_along(x)-1) %/% 3, sum)))))
+             )
 
       # adpative or fixed bin width
       if(bin.width==1){
@@ -423,6 +390,9 @@ RiboDiPA <- function(data, classlabel, method=c('gtxr','qvalue')){
   noread <- which(do.call('c',lapply(data,is.vector)))
   genes.list <- genes.list[which(do.call('c',lapply(data,is.matrix)))]
   data <- data[genes.list]
+  genes.list <- genes.list[which(apply(do.call('rbind',lapply(data,rowSums)),1,min)>0)]
+  noread2 <- which(apply(do.call('rbind',lapply(data,rowSums)),1,min)==0)
+  data <- data[genes.list]
 
   condition <- classlabel$comparison[classlabel$comparison!=0]
 
@@ -451,14 +421,14 @@ RiboDiPA <- function(data, classlabel, method=c('gtxr','qvalue')){
   # split test results by genes
   LL <- unlist(lapply(data,ncol))
   cLL <- c(0,cumsum(LL))
-  res.codon <- NULL
+  res.bin <- NULL
   pvalue.gene <- NULL
   for(l in 1:length(LL)){
     tmp <- res[(cLL[l]+1):(cLL[l]+LL[l]),]
     tmp <- cbind(tmp,padj =NA)
     tmp[which(!is.na(tmp[,"pvalue"])),"padj"] <- elitism::p.adjust(na.omit(tmp[,"pvalue"]), method=method[1])
     colnames(tmp)[3] <- method[1]
-    res.codon[[names(LL)[l]]] <- tmp
+    res.bin[[names(LL)[l]]] <- tmp
     pvalue.gene <- c(pvalue.gene,min(tmp[,method[1]],na.rm = T))
   }
   names(pvalue.gene) <- names(LL)
@@ -471,10 +441,73 @@ RiboDiPA <- function(data, classlabel, method=c('gtxr','qvalue')){
   }
   gene.result <- data.frame(cbind(tvalue=tvalue,pvalue=pvalue.gene,padj=padj.gene))[genes.list,]
   colnames(gene.result)[3] <- method[2]
-  return(list(codon=res.codon[genes.list],
-       gene=gene.result,small=rownames(noread),classlabel=classlabel,data=data,method=method))
+  return(list(bin=res.bin[genes.list],
+       gene=gene.result,small=rownames(c(noread,noread2)),classlabel=classlabel,data=data,method=method))
 }
 
+RiboDiPA.exon <- function(psitemap, classlabel, method=c('gtxr','qvalue')){
+  options(warn=-1)
+
+  ## prepare data
+  data <- psitemap$coverage
+  genes.list <- names(data)
+  data <- lapply(data,'[', which(classlabel$comparison!=0),)
+  genes.list <- genes.list[which(apply(do.call('rbind',lapply(data,rowSums)),1,min)>0)]
+  noread <- which(apply(do.call('rbind',lapply(data,rowSums)),1,min)==0)
+  data <- data[genes.list]
+  sgtf <- psitemap$exons[genes.list]
+  condition <- classlabel$comparison[classlabel$comparison!=0]
+  data.exon <- mapply(function(x,y) apply(y,1,function(z) rowSums2(x,cols=seq(z[1],z[2]))),
+                      data, sgtf)
+  ##
+  tvalue <- 1-do.call('c',lapply(data.exon, function(x) {
+    ifelse(ncol(x)==1,1,abs(sum(.svdv1(x[which(condition==1),])*.svdv1(x[which(condition==2),]))))
+  }  ))
+  tvalue <- pmax(0,tvalue)
+  factor.exon <- lapply(data,function(x) {
+    x.codon <- t(apply(x,1, function(v) unname(tapply(v, (seq_along(v)-1) %/% 3, sum))))
+    SizeFactors(x.codon,condition)
+  })
+  normFactors <- t(do.call('cbind',mapply(function(x,y) replicate(ncol(y),x),factor.exon,data.exon)))
+  DATA.com <- t(do.call('cbind',data.exon))
+
+  # codon level test
+  classlabel <- classlabel[classlabel$comparison!=0,]
+  classlabel$comparison <- as.factor(classlabel$comparison)
+  colnames(DATA.com) <- classlabel$type
+  dds <- DESeqDataSetFromMatrix(countData = DATA.com,
+                                colData = classlabel,
+                                design = ~ comparison)
+  # assign size factors
+  normalizationFactors(dds) <- normFactors
+  dds <- DESeq(dds)
+  res <- as.matrix(results(dds))[,c("pvalue","log2FoldChange")]
+
+  LL <- unlist(lapply(data.exon,ncol))
+  cLL <- c(0,cumsum(LL))
+  res.exon <- NULL
+  pvalue.gene <- NULL
+  for(l in 1:length(LL)){
+    tmp <- res[(cLL[l]+1):(cLL[l]+LL[l]),,drop=FALSE]
+    tmp <- cbind(tmp,padj =NA)
+    tmp[which(!is.na(tmp[,"pvalue"])),"padj"] <- elitism::p.adjust(na.omit(tmp[,"pvalue"]), method=method[1])
+    colnames(tmp)[3] <- method[1]
+    res.exon[[names(LL)[l]]] <- tmp
+    pvalue.gene <- c(pvalue.gene,min(tmp[,method[1]],na.rm = T))
+  }
+  names(pvalue.gene) <- names(LL)
+
+  # genome wide family control
+  if(method[2]=="qvalue"){
+    padj.gene <- qvalue(pvalue.gene)$qvalues
+  }else{
+    padj.gene <- elitism::p.adjust(pvalue.gene, method=method[2])
+  }
+  gene.result <- data.frame(cbind(tvalue=tvalue,pvalue=pvalue.gene,padj=padj.gene))[genes.list,]
+  colnames(gene.result)[3] <- method[2]
+  return(list(bin=res.exon[genes.list],
+              gene=gene.result,small=rownames(noread),classlabel=classlabel,data=data.exon,method=method))
+}
 #### plotting ####
 
 plot_track <- function(data, genes.list,replicates=NULL,exons=FALSE){
@@ -525,7 +558,8 @@ plot_test <- function(result, genes.list=NULL,threshold=0.05){
 
     data1 <- result$data[[gene]]
     p <- ncol(data1)
-    tmp <- result$codon[[gene]][,method[1]]
+    tmp <- result$bin[[gene]][,method[1]]
+    tmp[is.na(tmp)] <- 2
     col.red <- rep("red",p)
     col.red[which(tmp<=threshold)] <- "black"
     col.blue <- rep("blue",p)

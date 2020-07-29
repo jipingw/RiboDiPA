@@ -16,7 +16,7 @@ importFrom("data.table","data.table","as.data.table",":=","merge.data.table","se
 import(S4Vectors)
 import(reldist)
 importFrom("graphics", "axis", "barplot", "layout", "par", "title", "rect")
-importFrom("matrixStats", "colSums2")
+importFrom("matrixStats", "colSums2","rowSums2")
 importFrom("methods", "as")
 importFrom("stats", "setNames")
 export(RiboDiPA)
