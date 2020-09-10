@@ -9,13 +9,15 @@ Description: This package performs pattern similarity tests for Ribo-seq data wi
 License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp (>= 1.0.2), data.table, elitism, methods, S4Vectors,
-        IRanges, GenomicRanges, matrixStats, reldist, doParallel,
-        foreach, parallel, qvalue, DESeq2
+Imports: Rcpp (>= 1.0.2), graphics, stats, data.table, elitism,
+        methods, S4Vectors, IRanges, GenomicRanges, matrixStats,
+        reldist, doParallel, foreach, parallel, qvalue, DESeq2, ggplot2
 LinkingTo: Rcpp
-Depends: R (>= 3.5.0), Rsamtools, GenomicFeatures, GenomicAlignments
+Depends: R (>= 3.6.0), Rsamtools, GenomicFeatures, GenomicAlignments
 NeedsCompilation: yes
 RoxygenNote: 6.1.1
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
-Packaged: 2020-07-29 19:41:24 UTC; keren
+biocViews: RiboSeq, GeneExpression, GeneRegulation,
+        DifferentialExpression, Sequencing, Coverage
+Packaged: 2020-09-10 17:45:13 UTC; keren
