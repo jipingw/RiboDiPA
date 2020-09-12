@@ -1,16 +1,7 @@
----
-title: "RiboDiPA R package "
-output: rmarkdown::html_vignette
-author: "Keren Li, Matthew Hope, Xiaozhong A. Wang, Ji-Ping Wang"
-date: "02/20/2020"
-vignette: >
-    %\VignetteIndexEntry{RiboDiPA}
-    %\VignetteEngine{knitr::knitr}
-    %\VignetteEncoding{UTF-8}
----
-#### Maintainer: Ji-Ping Wang, <<jzwang@northwestern.edu>>
-<div style="line-height: 1.5em;"> 
+RiboDiPA R package
+================
 
+**Maintainer**: Ji-Ping Wang, \<<jzwang@northwestern.edu>\>
 
 
 **Reference**:
