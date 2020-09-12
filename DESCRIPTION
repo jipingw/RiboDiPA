@@ -5,7 +5,9 @@ Date: 2020-01-01
 Version: 0.1.0
 Author: Keren Li and Jiping Wang
 Maintainer: Ji-Ping Wang <jzwang@northwestern.edu>
-Description: This package performs pattern similarity tests for Ribo-seq data with three components: P-site mapping, data binning, pattern similarity test.
+Description: This package performs pattern similarity tests for Ribo-seq data
+    with three components: P-site mapping, data binning, pattern similarity 
+    test.
 License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
@@ -19,5 +21,7 @@ RoxygenNote: 6.1.1
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 biocViews: RiboSeq, GeneExpression, GeneRegulation,
-        DifferentialExpression, Sequencing, Coverage
-Packaged: 2020-09-10 17:45:13 UTC; keren
+        DifferentialExpression, Sequencing, Coverage, Alignment,
+        RNASeq, ImmunoOncology, QualityControl, DataImport, Software,
+        Normalization
+Packaged: 2020-09-12 20:40:56 UTC; keren
