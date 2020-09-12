@@ -4,18 +4,10 @@ RiboDiPA R package
 **Maintainer**: Ji-Ping Wang, \<<jzwang@northwestern.edu>\>
 
 
-**Reference**:
-Kasari, V., Pochopien, A.A., Margus, T., Murina, V., Turnbull, K., Zhou, Y., Nissan, T., Graf, M., Novacek, J., Atkinson, G.C., Johansson, M.J.O,. Wilson, D.N., Hauryliuk, V. (09, 2019) "A role for the Saccharomyces cerevisiae ABCF protein New1 in translation termination/recycling." *Nucleic Acids Research*, 47(16), 8807–8820.
-
-Lauria, F., Tebaldi, T., Bernabò, P., Groen, E.J.N., Gillingwater, T.H., Viero, G. (2018) "riboWaltz: Optimization of ribosome P-site positioning in ribosome profiling data." *PLoS Computational Biology*, 14(8):e1006169.
-
-Freedman, D. and Diaconis, P. (1981) "On the histogram as a density estimator: L2 theory." *Zeitschrift fu ̈r Wahrscheinlichkeitstheorie und Verwandte Gebiet*e, 57(4), 453–476.
-
-Gou, J., Tamhane, A. C., Xi, D., and Rom, D. (2014) "A class of improved hybrid Hochberg-hommel type step-up multiple test procedures." *Biometrika*, 101(4), 899–911.
+**Cite RiboDiPA package**:
 
 Li K., Hope C.M., Wang X.A., Wang J.-P. (2020) "RiboDiPA: A novel tool for differential pattern analysis in Ribo-seq data." *Nucleic Acid Research* (in revision).
 
-\doublespacing
 
 ## What is RiboDiPA?
 
@@ -202,7 +194,7 @@ Lastly, we anticipate that users will want to plot track level data of mapped P-
 plot_track(data=data.psite,genes.list=c("YDR050C","YDR064W"), replicates=NULL,exons=FALSE)
 ```
 
-<img src="https://github.com/jipingw/RiboDiPA-data/raw/master/fig2-1.png" title="plot of chunk fig2" alt="plot of chunk fig2" width="90%" height="90%" style="display: block; margin: auto;" /><img src="figure/fig2-2.png" title="plot of chunk fig2" alt="plot of chunk fig2" width="90%" height="90%" style="display: block; margin: auto;" />
+<img src="https://github.com/jipingw/RiboDiPA-data/raw/master/fig2-1.png" title="plot of chunk fig2" alt="plot of chunk fig2" width="90%" height="90%" style="display: block; margin: auto;" /><img src="https://github.com/jipingw/RiboDiPA-data/raw/master/fig2-2.png" title="plot of chunk fig2" alt="plot of chunk fig2" width="90%" height="90%" style="display: block; margin: auto;" />
 The `plot_track()` function visualizes reads mapped to P-site positions on a per gene basis. The input argument `data` is the output object of `PsiteMapping()` or `RiboDiPA()` function. The counts of RPFs mapped to P-sites is shown on the y-axis, while the total transcript in nucleotides is shown on the x-axis. Regardless of which strand the gene is located on in the genome, `plot_track()` always shows the total transcript with the 5' end on the left and the 3' end on the right. The mapped P-sites passed in the data argument, while the genes to be plotted are passed to the genes.list argument. A single gene can be plotted in this manner, as well as multiple genes with one gene per plot shown. If the exons argument is set to `TRUE`, RPFs per exon of the specified genes are also output.
 
 
@@ -211,15 +203,28 @@ The `plot_track()` function visualizes reads mapped to P-site positions on a per
 ## you can specify the thrshold to redefine the significant level
 plot_test(result=result.pst, genes.list=NULL, threshold=0.05) 
 ```
-<img src="https://github.com/jipingw/RiboDiPA-data/raw/master/fig3-1.png" title="plot of chunk fig3" alt="plot of chunk fig3" width="90%" height="90%" style="display: block; margin: auto;" /><img src="figure/fig3-2.png" title="plot of chunk fig3" alt="plot of chunk fig3" width="90%" height="90%" style="display: block; margin: auto;" />
+<img src="https://github.com/jipingw/RiboDiPA-data/raw/master/fig3-1.png" title="plot of chunk fig3" alt="plot of chunk fig3" width="90%" height="90%" style="display: block; margin: auto;" /><img src="https://github.com/jipingw/RiboDiPA-data/raw/master/fig3-2.png" title="plot of chunk fig3" alt="plot of chunk fig3" width="90%" height="90%" style="display: block; margin: auto;" />
 
 The `plot_test()` function similarly visualizes RPF counts mapped to P-sites, but with data binned into the bins used for differential pattern testing. The data is passed in to the result argument, using the output object of `DPtest()` or `DPtest.exon()` or `RiboDiPA()` function. For replicates marked as "1" in `classlabel` (see `DPtest()` function), the tracks are colored blue and replicates marked as "2"  are colored red. Differential bins are colored black, with bin-level adjusted $p$-value annotated underneath the the track of the last replicate. If `genes.list` is not specified, all genes with significant differential pattern will be output. Lastly, the threshold parameter allows users to specify a threshold of signifance for choosing which genes to plots when the gene list is large. A threshold value of 0.05 will only plot genes with an adjusted $p$-value of less than or equal to 0.05.
 
 ### Conclusion
-Thus concludes our vignette. For additional information, please consult the reference manual for each individual function, as well as the associated paper for this package for methodological details (Li et al, 2020).
+Thus concludes our vignette. For additional information, please consult the reference manual for each individual function, as well as the associated paper for this package for methodological details (Li et al, 2020)
 
+\
+\
+<small>
 
+**Other references of illustration data sets and p-site mapping**:
 
+Kasari, V., Pochopien, A.A., Margus, T., Murina, V., Turnbull, K., Zhou, Y., Nissan, T., Graf, M., Novacek, J., Atkinson, G.C., Johansson, M.J.O,. Wilson, D.N., Hauryliuk, V. (09, 2019) "A role for the Saccharomyces cerevisiae ABCF protein New1 in translation termination/recycling." *Nucleic Acids Research*, 47(16), 8807–8820.
+
+Lauria, F., Tebaldi, T., Bernabò, P., Groen, E.J.N., Gillingwater, T.H., Viero, G. (2018) "riboWaltz: Optimization of ribosome P-site positioning in ribosome profiling data." *PLoS Computational Biology*, 14(8):e1006169.
+
+Freedman, D. and Diaconis, P. (1981) "On the histogram as a density estimator: L2 theory." *Zeitschrift fu ̈r Wahrscheinlichkeitstheorie und Verwandte Gebiet*e, 57(4), 453–476.
+
+Gou, J., Tamhane, A. C., Xi, D., and Rom, D. (2014) "A class of improved hybrid Hochberg-hommel type step-up multiple test procedures." *Biometrika*, 101(4), 899–911.
+
+Li K., Hope C.M., Wang X.A., Wang J.-P. (2020) "RiboDiPA: A novel tool for differential pattern analysis in Ribo-seq data." *Nucleic Acid Research* (in revision).
 
 
 
