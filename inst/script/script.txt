@@ -1,0 +1,56 @@
+Prepare more examples from Wu et al. (2019).
+
+1. genes.gtf file
+
+   The genes.gtf file was from Saccharomyces cerevisiae, and can be downloaded
+   from http://uswest.ensembl.org/Saccharomyces_cerevisiae/Info/Index
+
+2. Ribo-seq data (yeast) from SRA:
+   WT_CHX1 (GSM3168380; SRR7241903)
+   WT_CHX2 (GSM3168381; SRR7241904)
+   eRF1_deple􏰁􏰊n CHX replicate 1 (GSM3168385; SRR7241908)
+   eRF1_deple􏰁􏰊n CHX replicate 2 (GSM3168386; SRR7241909)
+
+   Run the following scripts in the command line. These are single
+   end reads.
+
+   > fastq-dump -I --gzip SRR7241903
+   > fastq-dump -I --gzip SRR7241904
+   > fastq-dump -I --gzip SRR7241908
+   > fastq-dump -I --gzip SRR7241909
+
+3. Trim adaptors from reads
+
+   Use Cutadapt, ver1.14, to trim 3’ adaptors from reads, with all data
+   showing > 90% of reads with adaptors.
+
+   > cutadapt -q 10 -a CTGTAGGCACCATCAAT -o SRR7241903_trimmed.fastq.gz \
+   SRR7241903.fastq.gz
+   > cutadapt -q 10 -a CTGTAGGCACCATCAAT -o SRR7241904_trimmed.fastq.gz \
+   SRR7241904.fastq.gz
+   > cutadapt -q 10 -a CTGTAGGCACCATCAAT -o SRR7241908_trimmed.fastq.gz \
+   SRR7241908.fastq.gz
+   > cutadapt -q 10 -a CTGTAGGCACCATCAAT -o SRR7241909_trimmed.fastq.gz \
+   SRR7241909.fastq.gz
+
+4. Align the Ribo-seq reads to yeast RNA
+
+   User can use useBowtie2 or STAR or other alignment tools for this step.
+   Suppose the alignment output as SRR7241903.bam, SRR7241904.bam,
+   SRR7241908.bam, and SRR7241909.bam respectively.
+
+5. Filter reads
+
+   Filter read length to only include reads 20 to 32 nucleotides in length
+   using samtools and awk, using the following snippet:
+
+   > samtools view -h SRR7241903.bam | awk ’length($10)<33 {print}’ | \
+   awk ’length($10)>19 {print}’ > SRR7241903_filtered.bam
+   > samtools view -h SRR7241904.bam | awk ’length($10)<33 {print}’ | \
+   awk ’length($10)>19 {print}’ > SRR7241904_filtered.bam
+   > samtools view -h SRR7241908.bam | awk ’length($10)<33 {print}’ | \
+   awk ’length($10)>19 {print}’ > SRR7241908_filtered.bam
+   > samtools view -h SRR7241909.bam | awk ’length($10)<33 {print}’ | \
+   awk ’length($10)>19 {print}’ > SRR7241909_filtered.bam
+
+   Now genes.gtf and .bam files are ready to use.
