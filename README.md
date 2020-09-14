@@ -36,7 +36,7 @@ BiocManager::install("RiboDiPA")
 
 The RiboDiPA R package executes four major functions to perform differential pattern analysis of Ribo-seq data, with optional visualization of results. An overview of the process can be seen in Figure 1: 
 
-![A diagram of RiboDiPA.](https://github.com/jipingw/RiboDiPA-data/raw/master/Figure1.png){width=90%} 
+![A diagram of RiboDiPA.](https://github.com/jipingw/RiboDiPA-data/raw/master/Figure1.png){width=50%} 
 
 A) **GTF file parsing and exon merging**: For a given gene, all exons annotated in the GTF file are merged into a total transcript. This provides a global picture of changes across conditions for a gene, as the total transcript will capture changes in ribosome occupancy even when transcript isoform usage might change across conditions.
 
@@ -194,7 +194,7 @@ Lastly, we anticipate that users will want to plot track level data of mapped P-
 plot_track(data=data.psite,genes.list=c("YDR050C","YDR064W"), replicates=NULL,exons=FALSE)
 ```
 
-<img src="https://github.com/jipingw/RiboDiPA-data/raw/master/fig2-1.png" title="plot of chunk fig2" alt="plot of chunk fig2" width="90%" height="90%" style="display: block; margin: auto;" /><img src="https://github.com/jipingw/RiboDiPA-data/raw/master/fig2-2.png" title="plot of chunk fig2" alt="plot of chunk fig2" width="90%" height="90%" style="display: block; margin: auto;" />
+<img src="https://github.com/jipingw/RiboDiPA-data/raw/master/fig2-1.png" title="plot of chunk fig2" alt="plot of chunk fig2" width="50%" height="50%" style="display: block; margin: auto;" /><img src="https://github.com/jipingw/RiboDiPA-data/raw/master/fig2-2.png" title="plot of chunk fig2" alt="plot of chunk fig2" width="50%" height="50%" style="display: block; margin: auto;" />
 The `plot_track()` function visualizes reads mapped to P-site positions on a per gene basis. The input argument `data` is the output object of `PsiteMapping()` or `RiboDiPA()` function. The counts of RPFs mapped to P-sites is shown on the y-axis, while the total transcript in nucleotides is shown on the x-axis. Regardless of which strand the gene is located on in the genome, `plot_track()` always shows the total transcript with the 5' end on the left and the 3' end on the right. The mapped P-sites passed in the data argument, while the genes to be plotted are passed to the genes.list argument. A single gene can be plotted in this manner, as well as multiple genes with one gene per plot shown. If the exons argument is set to `TRUE`, RPFs per exon of the specified genes are also output.
 
 
@@ -203,7 +203,7 @@ The `plot_track()` function visualizes reads mapped to P-site positions on a per
 ## you can specify the thrshold to redefine the significant level
 plot_test(result=result.pst, genes.list=NULL, threshold=0.05) 
 ```
-<img src="https://github.com/jipingw/RiboDiPA-data/raw/master/fig3-1.png" title="plot of chunk fig3" alt="plot of chunk fig3" width="90%" height="90%" style="display: block; margin: auto;" /><img src="https://github.com/jipingw/RiboDiPA-data/raw/master/fig3-2.png" title="plot of chunk fig3" alt="plot of chunk fig3" width="90%" height="90%" style="display: block; margin: auto;" />
+<img src="https://github.com/jipingw/RiboDiPA-data/raw/master/fig3-1.png" title="plot of chunk fig3" alt="plot of chunk fig3" width="50%" height="50%" style="display: block; margin: auto;" /><img src="https://github.com/jipingw/RiboDiPA-data/raw/master/fig3-2.png" title="plot of chunk fig3" alt="plot of chunk fig3" width="50%" height="50%" style="display: block; margin: auto;" />
 
 The `plot_test()` function similarly visualizes RPF counts mapped to P-sites, but with data binned into the bins used for differential pattern testing. The data is passed in to the result argument, using the output object of `DPtest()` or `DPtest.exon()` or `RiboDiPA()` function. For replicates marked as "1" in `classlabel` (see `DPtest()` function), the tracks are colored blue and replicates marked as "2"  are colored red. Differential bins are colored black, with bin-level adjusted <em>p</em>-value annotated underneath the the track of the last replicate. If `genes.list` is not specified, all genes with significant differential pattern will be output. Lastly, the threshold parameter allows users to specify a threshold of signifance for choosing which genes to plots when the gene list is large. A threshold value of 0.05 will only plot genes with an adjusted <em>p</em>-value of less than or equal to 0.05.
 
