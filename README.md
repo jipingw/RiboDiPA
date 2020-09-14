@@ -36,7 +36,7 @@ BiocManager::install("RiboDiPA")
 
 The RiboDiPA R package executes four major functions to perform differential pattern analysis of Ribo-seq data, with optional visualization of results. An overview of the process can be seen in Figure 1: 
 
-![A diagram of RiboDiPA.](https://github.com/jipingw/RiboDiPA-data/raw/master/Figure1.png){width=50%} 
+![A diagram of RiboDiPA.](https://github.com/jipingw/RiboDiPA-data/raw/master/Figure1.png) 
 
 A) **GTF file parsing and exon merging**: For a given gene, all exons annotated in the GTF file are merged into a total transcript. This provides a global picture of changes across conditions for a gene, as the total transcript will capture changes in ribosome occupancy even when transcript isoform usage might change across conditions.
 
