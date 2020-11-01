@@ -5,7 +5,9 @@
 Size factors for normalization by sequencing depth
 }
 \description{
-This function calculate the relative abundance of samples, in essence accounting for different sequencing depths across different Ribo-seq experiments.
+This function calculate the relative abundance of samples, in essence 
+accounting for different sequencing depths across different Ribo-seq 
+experiments.
 }
 \usage{
 SizeFactors(x, condition)
@@ -16,7 +18,9 @@ SizeFactors(x, condition)
 A matrix of mapped P-site positions.
 }
 \item{condition}{
-A vector of indicators. \code{1}'s stand for reference condition, \code{2}'s stand for target condtion, \code{0}'s represent replicates not invloved in the abundance estimation, if present.
+A vector of indicators. \code{1}'s stand for reference condition, 
+\code{2}'s stand for target condtion, \code{0}'s represent replicates
+not invloved in the abundance estimation, if present.
 }
 }
 \examples{

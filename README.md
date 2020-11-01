@@ -3,10 +3,9 @@ RiboDiPA R package
 
 **Maintainer**: Ji-Ping Wang, \<<jzwang@northwestern.edu>\>
 
-
 **Cite RiboDiPA package**:
 
-Li K., Hope C.M., Wang X.A., Wang J.-P. (2020) "RiboDiPA: A novel tool for differential pattern analysis in Ribo-seq data." *Nucleic Acid Research* (in revision).
+L,i K., Hope, C.M., Wang, X.A., Wang, J.-P. (2020) "RiboDiPA: A novel tool for differential pattern analysis in Ribo-seq data." *Nucleic Acid Research* (in revision).
 
 
 ## What is RiboDiPA?

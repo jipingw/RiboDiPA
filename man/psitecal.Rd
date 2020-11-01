@@ -5,7 +5,9 @@
 P-site position of reads
 }
 \description{
-This function outputs the P-site position, provided the CIGAR string of the alignment and the start position of read. It is implemented as a C++ function using the Rcpp package.
+This function outputs the P-site position, provided the CIGAR 
+string of the alignment and the start position of read. It is 
+implemented as a C++ function using the Rcpp package.
 }
 \usage{
 psitecal(cigar, start, psitemap)
@@ -18,7 +20,8 @@ A vector of CIGAR strings.}
 A vector of read start positions.
 }
 \item{psitemap}{
-A vector of relative P-site positions, which describe the offset from the 5 prime most nucleotide of the read to the P-site.
+A vector of relative P-site positions, which describe the offset 
+from the 5 prime most nucleotide of the read to the P-site.
 }
 }
 \value{
