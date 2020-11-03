@@ -66,7 +66,7 @@ zero.omit=FALSE,
     bin.from.5UTR=TRUE, cores=2)
 data.codon <- DataBinning(data=data.psite$coverage, bin.width=1, 
 zero.omit=FALSE,
-    bin.from.5UTR=TRUE, cores=NULL)
+    bin.from.5UTR=TRUE, cores=2)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
