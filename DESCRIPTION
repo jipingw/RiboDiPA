@@ -2,7 +2,7 @@ Package: RiboDiPA
 Type: Package
 Title: Ribosome differential pattern analysis
 Date: 2020-10-31
-Version: 0.99.1
+Version: 0.99.2
 Authors@R:
     c(person(given = "Keren",
              family = "Li",
