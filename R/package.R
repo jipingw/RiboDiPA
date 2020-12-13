@@ -5,27 +5,29 @@ RiboDiPA <- function(bam_file_list, gtf_file, classlabel, psite.mapping="auto",
     if (is.null(cores)) {
         cores <- detectCores(logical=FALSE)
     }
-    data.psite <- PsiteMapping(bam_file_list=bam_file_list, gtf_file=gtf_file,
+    data.psite <- psiteMapping(bam_file_list=bam_file_list, gtf_file=gtf_file,
         psite.mapping=psite.mapping, cores=cores)
     ifelse(exon.binning, {
-        result <- DPtest.exon(psitemap=data.psite, classlabel=classlabel,
+        result <- diffPatternTestExon(psitemap=data.psite, 
+            classlabel=classlabel, method=method)
+        }, {
+        data.binned <- dataBinning(data=data.psite$coverage,
+            bin.width=bin.width, zero.omit=zero.omit,
+            bin.from.5UTR=bin.from.5UTR, cores=cores)
+        result <- diffPatternTest(data=data.binned, classlabel=classlabel,
             method=method)
-    }, {
-        data.binned <- DataBinning(data=data.psite$coverage,
-            bin.width=bin.width,zero.omit=zero.omit,
-            bin.from.5UTR=bin.from.5UTR,cores=cores)
-        result <- DPtest(data=data.binned,classlabel=classlabel,method=method)
     })
     return(c(result, data.psite))
 }
 
 #### p-site mapping on the merged exons ####
 
-PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
+psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     cores=NULL) {
     options(warn=-1)
     # Get names of samples from BAM file list, removing file paths and suffixes
-    names.sample <- sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)","\\2",bam_file_list)
+    names.sample <- sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", 
+        bam_file_list)
     names.sample <- sub(".bam", "", names.sample)
 
     # Parse gtf file to create GRangesList object
@@ -38,19 +40,20 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     all_genes <- all_genes[vapply(runValue(seqnames(all_genes)), length,
         integer(1)) == 1]
     message("Computing total transcript coordinate for exons ...")
-    exons.coord <- lapply(all_genes, .TotalTransciptCoordinate)
+    exons.coord <- lapply(all_genes, .totalTransciptCoordinate)
     message("done\n")
     # merge overlapping exons in total transcript
     all_genes <- IRanges::reduce(all_genes)
 
-    results_all <- .PmappingAll(bam_file_list=bam_file_list,
-        psite.mapping=psite.mapping,txdb=txdb,all_genes=all_genes, cores=cores)
+    results_all <- .pMappingAll(bam_file_list=bam_file_list,
+        psite.mapping=psite.mapping, txdb=txdb, all_genes=all_genes,
+        cores=cores)
     colnames(results_all$counts) <- names.sample
     results_all$exons <- exons.coord
     return(results_all)
 }
 
-.CreateAnno <- function(txdb) {
+.createAnno <- function(txdb) {
     group_name <- NULL
     exon <- suppressWarnings(GenomicFeatures::exonsBy(txdb,
         by="tx", use.names=TRUE))
@@ -79,11 +82,11 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     return(anno_df)
 }
 
-.PsiteOffset <- function(bam_file_list, txdb) {
+.psiteOffset <- function(bam_file_list, txdb) {
     cds_start <- cds_stop <- end3 <- end5 <- i.l_cds <- offset <- NULL
     i.l_utr5 <-  site_dist_end3 <- site_dist_end5 <- transcript <- NULL
     # prepare annotation
-    annotation <- .CreateAnno(txdb)
+    annotation <- .createAnno(txdb)
     all_tx <- GenomicFeatures::exonsBy(txdb, by="tx", use.names=TRUE)
     name.tx <- names(unlist(all_tx))
     all_tmp <- data.table::as.data.table(all_tx)
@@ -118,11 +121,11 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
             site_dist_end3 >= 5])
     }
     site_sub <- site_sub[length == end3 - end5 + 1]
-    offsets <- .offsetFUN(site_sub=site_sub, lev=lev)
+    offsets <- .offsetFun(site_sub=site_sub, lev=lev)
     return(offsets)
 }
 
-.tempoff <- function(v_dist) {
+.tempOff <- function(v_dist) {
     ttable <- sort(table(v_dist), decreasing=TRUE)
     ttable_sr <- ttable[as.character(as.numeric(names(ttable)) + 1)]
     ttable_sl <- ttable[as.character(as.numeric(names(ttable)) - 1)]
@@ -130,7 +133,7 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     return(as.numeric(names(tsel[tsel == 2][1])))
 }
 
-.adjoff <- function(dtsite, bestoff) {
+.adjOff <- function(dtsite, bestoff) {
     t <- table(factor(dtsite, levels=seq(min(dtsite) - 2, max(dtsite) + 1)))
     t[c(1, 2)] <- t[3] + 1
     locmax <- as.numeric(as.character(names(t[which(diff(sign(diff(t))) ==
@@ -139,7 +142,7 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     ifelse(length(adjoff) != 0, adjoff, bestoff)
 }
 
-.offsetFUN <- function(site_sub, lev) {
+.offsetFun <- function(site_sub, lev) {
     onsite <- count <- .SD <- site_dist_end5 <- NULL
     minlen <- min(site_sub$length)
     maxlen <- max(site_sub$length)
@@ -148,12 +151,12 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     offsets <- data.table(length=as.numeric(as.character(names(t))),
         count=as.vector(t))
     offsets[, `:=`(onsite, TRUE)][count == 0, `:=`(onsite, FALSE)]
-    offset5 <- site_sub[, list(offset=.tempoff(.SD$site_dist_end5)), by=length]
+    offset5 <- site_sub[, list(offset=.tempOff(.SD$site_dist_end5)), by=length]
     offsets.tmp <- merge(offsets, offset5, all.x=TRUE, by="length")
     best.offset <- as.numeric(offsets.tmp[!is.na(offset),
         list(count=sum(count)), by=offset][count == max(count)][, offset])
     # adjusted offset
-    adj.tab <- site_sub[, list(offset=.adjoff(site_dist_end5, best.offset)),
+    adj.tab <- site_sub[, list(offset=.adjOff(site_dist_end5, best.offset)),
         by=length]
     offsets <- merge(offsets, adj.tab, all.x=TRUE, by="length")
     offsets[is.na(offset), `:=`(offset, best.offset)][,
@@ -161,7 +164,7 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     setnames(offsets, c("qwidth", "psite"))
 }
 
-.PmappingAll <- function(bam_file_list, psite.mapping, txdb, all_genes, cores){
+.pMappingAll <- function(bam_file_list, psite.mapping, txdb, all_genes, cores){
     chrom <- seqnames(seqinfo(all_genes))  # extract all chromosome names
     for (k in seq_along(bam_file_list)) {
         if (!file.exists(gsub(".bam", ".bai", bam_file_list[k]))) {
@@ -171,7 +174,7 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     }
     if (psite.mapping[1] == "auto") {
         cat("Computing P-site offsets \n")
-        psite.mapping <- .PsiteOffset(bam_file_list=bam_file_list, txdb=txdb)
+        psite.mapping <- .psiteOffset(bam_file_list=bam_file_list, txdb=txdb)
     }
     if (is.null(cores)) {
         cores <- detectCores(logical=FALSE)
@@ -183,14 +186,13 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
             registerDoParallel(cl)
         }
         i <- NULL
-        results <- foreach(i=seq_along(chrom), .export=c(".PmappingChr",
-        ".IntersectionStrict2","psitecal",".CreateAnno",".PsiteOffset"),
-        .packages=c("Rsamtools","GenomicAlignments","GenomicFeatures",
-        "data.table","Rcpp"), .multicombine=TRUE) %dopar%
+        results <- foreach(i=seq_along(chrom), .export=c(".pMappingChr",
+        ".intersectionStrict", "psiteCal", ".createAnno", ".psiteOffset"),
+        .packages=c("Rsamtools", "GenomicAlignments", "GenomicFeatures",
+        "data.table", "Rcpp"), .multicombine=TRUE) %dopar%
             {
-                res <- .PmappingChr(bam=bam_file_list[k], all_genes=all_genes,
-                    ch=chrom[i], psite.mapping=psite.mapping)
-                return(res)
+                return(.pMappingChr(bam=bam_file_list[k], all_genes=all_genes,
+                    ch=chrom[i], psite.mapping=psite.mapping))
             }
         stopImplicitCluster()
         stopCluster(cl)
@@ -212,7 +214,7 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
         psite.mapping=psite.mapping))
 }
 
-.PmappingChr <- function(bam, all_genes, ch, psite.mapping) {
+.pMappingChr <- function(bam, all_genes, ch, psite.mapping) {
     ## function to calculate the coverage score and return in Rle objects
     psite <- center <- NULL
     bf <- BamFile(bam)
@@ -234,7 +236,7 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
                 gal3[, `:=`(psite, floor(qwidth/2))],
                 gal3 <- merge.data.table(gal3, psite.mapping, by="qwidth"))
             gal3[strand == "-", `:=`(psite, qwidth - psite - 1)][, `:=`(center,
-                psitecal(cigar, start, psite))]
+                psiteCal(cigar, start, psite))]
             gal3 <- gal3[center > 0, ]
             gal3[, `:=`(qwidth, 1)][, `:=`(width, 1)][, `:=`(njunc, 0)][,
                 `:=`(cigar, "1M")]
@@ -245,9 +247,9 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
         } else {
             gal3 <- gal2
         }
-        results <- .IntersectionStrict2(genes, gal3)
+        results <- .intersectionStrict(genes, gal3)
         gal3 <- gal3[queryHits(results)]
-        results <- .IntersectionStrict2(genes, gal3)
+        results <- .intersectionStrict(genes, gal3)
         tx2reads <- setNames(as(t(results), "List"), names(genes))
         compat_reads_by_tx <- extractList(gal3, tx2reads)
         read_counts <- data.frame(lengths(tx2reads))
@@ -262,7 +264,7 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     return(list(tx_compat_cvg, read_counts))
 }
 
-.IntersectionStrict2 <- function(features, reads, ignore.strand=FALSE,
+.intersectionStrict <- function(features, reads, ignore.strand=FALSE,
     inter.feature=TRUE){
     ## function adapted to compile compatible reads
     ov <- findOverlaps(reads, features, type="within",
@@ -274,18 +276,18 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     return(ov)
 }
 
-.Segcal <- function(x, ints) {
+.segCal <- function(x, ints) {
     l <- sum(x >= ints[, 1])
     cumints <- c(0, cumsum(ints[, 2]))
     return(cumints[l] + x - ints[l, 1] + 1)
 }
 
-.TotalTransciptCoordinate <- function(x) {
+.totalTransciptCoordinate <- function(x) {
     range.gene <- cbind(start(x), end(x))
     range.gene2 <- IRanges(start(x), end(x))
     range.gene2 <- as.matrix(union(range.gene2, range.gene2))
     range.relative <- matrix(vapply(range.gene,
-        function(x) .Segcal(x, range.gene2), numeric(1)), ncol=2)
+        function(x) .segCal(x, range.gene2), numeric(1)), ncol=2)
     rownames(range.relative) <- x$exon_name
     colnames(range.relative) <- c("start", "end")
     return(range.relative)
@@ -293,7 +295,7 @@ PsiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
 
 #### data binning ####
 
-DataBinning <- function(data, bin.width=0, zero.omit=FALSE, bin.from.5UTR=TRUE,
+dataBinning <- function(data, bin.width=0, zero.omit=FALSE, bin.from.5UTR=TRUE,
     cores=NULL) {
     options(warn=-1)
     if (is.null(cores)) cores <- detectCores(logical=FALSE)
@@ -303,7 +305,7 @@ DataBinning <- function(data, bin.width=0, zero.omit=FALSE, bin.from.5UTR=TRUE,
     gene <- NULL
     message("Data binning ...")
     DATA.BIN <- foreach(gene=genes.list, .final=function(x) setNames(x,
-        genes.list), .packages="reldist", .export=".App2exact") %dopar% {
+        genes.list), .packages="reldist", .export=".app2Exact") %dopar% {
         data1 <- data[[gene]]
         n <- nrow(data1)
         p <- ncol(data1)
@@ -325,7 +327,7 @@ DataBinning <- function(data, bin.width=0, zero.omit=FALSE, bin.from.5UTR=TRUE,
                 n.bin <- ceiling(p.codon/(2 * iqr.data/(n.data^(1/3))))
                 p.bin <- min(p.codon, n.bin)  # adaptive
             }
-            bin.size <- .App2exact(ncol(data.codon), rep(1/p.bin, p.bin))
+            bin.size <- .app2Exact(ncol(data.codon), rep(1/p.bin, p.bin))
             if (!bin.from.5UTR) bin.size <- rev(bin.size)
             Bin.size <- c(0, cumsum(bin.size))
             data.bin <- do.call("cbind",lapply(split(seq_len(ncol(data.codon)),
@@ -343,7 +345,7 @@ DataBinning <- function(data, bin.width=0, zero.omit=FALSE, bin.from.5UTR=TRUE,
     return(DATA.BIN)
 }
 
-.App2exact <- function(n, p) {
+.app2Exact <- function(n, p) {
     ## p=p[1:m] is an allocation, p[i] >=0, sum(p)=1
     ans <- floor(n * p)
     k <- n - sum(ans)
@@ -356,7 +358,7 @@ DataBinning <- function(data, bin.width=0, zero.omit=FALSE, bin.from.5UTR=TRUE,
 }
 
 #### main function ####
-DPtest <- function(data, classlabel, method=c("gtxr", "qvalue")) {
+diffPatternTest <- function(data, classlabel, method=c("gtxr", "qvalue")) {
     options(warn=-1)
 
     ## prepare data
@@ -373,7 +375,7 @@ DPtest <- function(data, classlabel, method=c("gtxr", "qvalue")) {
     noread2 <- which(apply(do.call("rbind", lapply(data, rowSums)),1,min) == 0)
     data <- data[genes.list]
 
-    result.dp <- .DiPAtest(data=data, classlabel=classlabel[classlabel$
+    result.dp <- .diffPatternTest2(data=data, classlabel=classlabel[classlabel$
         comparison != 0, ], method=method)
     result.dp$small <- names(c(noread, noread2))
     result.dp$data <- data
@@ -381,7 +383,8 @@ DPtest <- function(data, classlabel, method=c("gtxr", "qvalue")) {
     return(result.dp)
 }
 
-DPtest.exon <- function(psitemap, classlabel, method=c("gtxr", "qvalue")) {
+diffPatternTestExon <- function(psitemap, classlabel, method=c("gtxr", 
+    "qvalue")) {
     options(warn=-1)
 
     ## prepare data
@@ -396,7 +399,7 @@ DPtest.exon <- function(psitemap, classlabel, method=c("gtxr", "qvalue")) {
     data <- data[genes.list]
     sgtf <- psitemap$exons[genes.list]
 
-    result.dp <- .DiPAtest.exon(sgtf=sgtf, data=data, classlabel=
+    result.dp <- .diffPatternTestExon2(sgtf=sgtf, data=data, classlabel=
         classlabel[classlabel$comparison != 0, ], method=method)
     result.dp$small <- names(noread)
     result.dp$data <- data
@@ -404,13 +407,13 @@ DPtest.exon <- function(psitemap, classlabel, method=c("gtxr", "qvalue")) {
     return(result.dp)
 }
 
-.DiPAtest <- function(data, classlabel, method) {
+.diffPatternTest2 <- function(data, classlabel, method) {
     genes.list <- names(data)
     condition <- classlabel$comparison
 
     tvalue <- 1 - do.call("c", lapply(data, function(x) {
-        abs(sum(.svdv1(x[which(condition == 1), ]) *.svdv1(x[which(condition ==
-            2), ])))
+        abs(sum(.svdSelf(x[which(condition == 1), ]) *
+            .svdSelf(x[which(condition == 2), ])))
     }))
 
     message("Bin level testing ...\n")
@@ -419,7 +422,7 @@ DPtest.exon <- function(psitemap, classlabel, method=c("gtxr", "qvalue")) {
     colnames(DATA.com) <- classlabel$type
     dds <- DESeqDataSetFromMatrix(countData=DATA.com, colData=classlabel,
         design=~comparison)
-    S.hat <- lapply(data, SizeFactors, condition=condition)  # size factor
+    S.hat <- lapply(data, normFactor, condition=condition)  # size factor
     normFactors <- t(do.call("cbind", mapply(function(x, y)
         replicate(ncol(y), x), S.hat, data)))
     normalizationFactors(dds) <- normFactors  # assign size factors
@@ -449,7 +452,7 @@ DPtest.exon <- function(psitemap, classlabel, method=c("gtxr", "qvalue")) {
     return(list(bin=res.bin[genes.list], gene=gene.result, method=method))
 }
 
-.DiPAtest.exon <- function(sgtf, data, classlabel, method) {
+.diffPatternTestExon2 <- function(sgtf, data, classlabel, method) {
     genes.list <- names(data)
     condition <- classlabel$comparison
     message("Exon binning ...\n")
@@ -457,15 +460,15 @@ DPtest.exon <- function(psitemap, classlabel, method=c("gtxr", "qvalue")) {
         apply(y, 1, function(z) rowSums2(x, cols=seq(z[1], z[2])))
     }, data, sgtf)
     tvalue <- 1 - do.call("c", lapply(data.exon, function(x) {
-        ifelse(ncol(x) == 1, 1, abs(sum(.svdv1(x[which(condition == 1), ]) *
-            .svdv1(x[which(condition == 2), ]))))
+        ifelse(ncol(x) == 1, 1, abs(sum(.svdSelf(x[which(condition == 1), ]) *
+            .svdSelf(x[which(condition == 2), ]))))
     }))
     tvalue <- pmax(0, tvalue)
     message("done!\nExon level testing ...\n")
     factor.exon <- lapply(data, function(x) {
         x.codon <- t(apply(x, 1, function(v) {
             unname(tapply(v, (seq_along(v) - 1)%/%3, sum))}))
-        SizeFactors(x.codon, condition)
+        normFactor(x.codon, condition)
     })
     normFactors <- t(do.call("cbind", mapply(function(x, y)
         replicate(ncol(y), x), factor.exon, data.exon)))
@@ -501,7 +504,7 @@ DPtest.exon <- function(psitemap, classlabel, method=c("gtxr", "qvalue")) {
 }
 
 ## abundance estimation function
-SizeFactors <- function(x, condition) {
+normFactor <- function(x, condition) {
     s.tmp <- rowSums(x)/median(rowSums(x))
     if (all(s.tmp > 0)) {
         y1 <- colSums2(x, rows=(condition == 1))
@@ -528,7 +531,7 @@ SizeFactors <- function(x, condition) {
     s.tmp
 }
 
-.svdv1 <- function(x) {
+.svdSelf <- function(x) {
     ifelse(is.vector(x), result <- x/sqrt(sum(x^2)), result <- svd(x)$v[, 1])
     return(result)
 }
@@ -536,7 +539,7 @@ SizeFactors <- function(x, condition) {
 
 #### plotting ####
 
-plot_track <- function(data, genes.list, replicates=NULL, exons=FALSE) {
+plotTrack <- function(data, genes.list, replicates=NULL, exons=FALSE) {
     nt <- RPF <- NULL
     options(warn=-1)
     if (is.null(replicates)) {
@@ -556,7 +559,7 @@ plot_track <- function(data, genes.list, replicates=NULL, exons=FALSE) {
             geom_bar(stat="identity") + theme_minimal() +
             facet_wrap(~replicate, ncol=1) +
             scale_x_continuous(breaks=c(1,ncol(data0))) +
-            ggtitle(paste("gene: ", gene, ", ", ncol(data0), " nt", sep=""))+
+            ggtitle(paste("gene: ", gene, ", ", ncol(data0), " nt", sep="")) +
             theme(plot.title=element_text(hjust=0.5))
         if (exons) {
             gplot[[gene]][["exon"]] <- NULL
@@ -578,7 +581,7 @@ plot_track <- function(data, genes.list, replicates=NULL, exons=FALSE) {
     return(gplot)
 }
 
-plot_test <- function(result, genes.list=NULL, threshold=0.05) {
+plotTest <- function(result, genes.list=NULL, threshold=0.05) {
     bin <- RPF <- condition <- NULL
     method <- result$method
     classlabel <- result$classlabel[result$classlabel$comparison != 0, ]

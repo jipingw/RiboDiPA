@@ -12,8 +12,8 @@ differential patterns.
 }
 \usage{
 RiboDiPA(bam_file_list, gtf_file, classlabel, psite.mapping = "auto",
-exon.binning = FALSE, bin.width = 0,zero.omit = FALSE, bin.from.5UTR = TRUE,
-method = c("gtxr", "qvalue"), cores = NULL)
+    exon.binning = FALSE, bin.width = 0,zero.omit = FALSE, 
+    bin.from.5UTR = TRUE, method = c("gtxr", "qvalue"), cores = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -37,7 +37,7 @@ reference condition, \code{2} stands for the treatment condtion, and
 }
 \item{psite.mapping}{
 Rules for P-site offsets, to map a given read length of RPF to a P-site.
-See \code{PsiteMapping} for details.
+See \code{psiteMapping} for details.
 }
 \item{exon.binning}{
 Logical indicator. If \code{exon.binning} is \code{TRUE}, use the exon 
@@ -47,7 +47,7 @@ adaptive or fixed binning will be performed.
 \item{bin.width}{
 Binning width per bin. \code{0} represents adaptive binning, which is 
 the default method. The minimal value for fixed-width binning is \code{1},
-which represent single-codon binning. See \code{DataBinning} for details.
+which represent single-codon binning. See \code{dataBinning} for details.
 }
 \item{zero.omit}{
 If this parameter is \code{TRUE}, bins with zero reads across all 
@@ -60,8 +60,8 @@ width bins will be arranged at the 3' end of the total transcript.
 }
 \item{method}{
 2-component character vector specifies the multiplicity correction 
-method for codon/bin-level p-value adjustment. The default See \code{DPtest} 
-for details.
+method for codon/bin-level p-value adjustment. The default See 
+\code{diffPatternTest} for details.
 }
 \item{cores}{
 The number of cores to use for parallel execution. If not specified, 
@@ -104,24 +104,27 @@ The P-site mapping rule or A-site mapping rule used.
 }
 
 \examples{
-sample_names <- c("WT1.bam","WT2.bam","MUT1.bam","MUT2.bam","eg.gtf")
+sample_names <- c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam", 
+    "eg.gtf")
 url <- "https://github.com/mhope321/RiboDipa/raw/master/"
 dest <- paste0(getwd(),"/")
 for (sample_file in sample_names){
-    download.file(paste0(url,sample_file),paste0(dest,sample_file))
+    download.file(paste0(url, sample_file), paste0(dest, 
+        sample_file))
 }
 
-bam_file_list <- list.files(path=dest,pattern=".bam$", full.names=TRUE)
-names.sample <- c("mutant1","mutant2","wildtype1","wildtype2")
-gtf_file <- list.files(path=dest,pattern=".gtf$", full.names=TRUE)
+bam_file_list <- list.files(path = dest,pattern = ".bam$", 
+    full.names = TRUE)
+names.sample <- c("mutant1", "mutant2", "wildtype1", "wildtype2")
+gtf_file <- list.files(path = dest, pattern = ".gtf$", 
+    full.names = TRUE)
 
-classlabel <- data.frame(condition = c("mutant","mutant","wildtype",
-"wildtype"),
-    comparison=c(2,2,1,1))
+classlabel <- data.frame(condition = c("mutant", "mutant", 
+    "wildtype", "wildtype"), comparison = c(2, 2, 1, 1))
 rownames(classlabel) <- names.sample
-result.pip <- RiboDiPA(bam_file_list,gtf_file,classlabel,cores=2)
+result.pip <- RiboDiPA(bam_file_list, gtf_file, classlabel, cores=2)
 }
 \seealso{
-\code{\link[RiboDiPA]{PsiteMapping}, \link[RiboDiPA]{DataBinning}, 
-\link[RiboDiPA]{DPtest}, \link[RiboDiPA]{DPtest.exon}}}
+\code{\link[RiboDiPA]{psiteMapping}, \link[RiboDiPA]{dataBinning}, 
+\link[RiboDiPA]{diffPatternTest}, \link[RiboDiPA]{diffPatternTestExon}}}
 

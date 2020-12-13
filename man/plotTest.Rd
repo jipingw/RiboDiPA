@@ -1,5 +1,5 @@
-\name{plot_test}
-\alias{plot_test}
+\name{plotTest}
+\alias{plotTest}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Plotting ribosome footprint data from mapped P-sites at the bin level.
@@ -11,12 +11,12 @@ Bins that test positive for statistically significant differences
 are marked in black. Plotting is implmented with the ggplot2 package.
 }
 \usage{
-plot_test(result, genes.list=NULL,threshold=0.05)
+plotTest(result, genes.list = NULL, threshold = 0.05)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
 \item{result}{
-Data object resulting from \code{DPtest} or \code{DPtest.exon} 
+Data object resulting from \code{diffPatternTest} or \code{diffPatternTestExon}
 functions or wrapper function \code{RiboDiPA}.
 }
 \item{genes.list}{
@@ -35,6 +35,6 @@ This argument is ignored if \code{genes.list} is not NULL.
 Bin-level tracks of genes and test results.
 }
 \examples{
-load(system.file("extdata","sample.Rdata",package="RiboDiPA"))
-plot_test(result=result.pst, genes.list=NULL, threshold=0.05)
+data(result.pst)
+plotTest(result = result.pst, genes.list = NULL, threshold = 0.05)
 }

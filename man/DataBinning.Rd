@@ -1,5 +1,5 @@
-\name{DataBinning}
-\alias{DataBinning}
+\name{dataBinning}
+\alias{dataBinning}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Data binning
 }
@@ -12,14 +12,14 @@ across different conditions and replicates. Alternatively, data can
 also be binned into bins of fixed width, down to the single-codon level.
 }
 \usage{
-DataBinning(data, bin.width = 0, zero.omit = FALSE, bin.from.5UTR = 
-TRUE, cores = NULL)
+dataBinning(data, bin.width = 0, zero.omit = FALSE, 
+    bin.from.5UTR = TRUE, cores = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
 \item{data}{
 A list of mapped P-site position matrices from the \code{coverage} 
-object of the \code{PsiteMapping} function. In each element of the 
+object of the \code{psiteMapping} function. In each element of the 
 list, rows correspond to replicates, while columns correspond to 
 nucleotides across the total transcript.
 }
@@ -46,7 +46,7 @@ the number of cores is set to the value of \code{detectCores(logical = FALSE)}.
 }
 \details{
 We recommend to use an adaptive bin width \eqn{h} following the 
-Freedman-Diaconis rule, \deqn{h= \frac{2  IQR}{m^{1/3}}}. To see 
+Freedman-Diaconis rule, \deqn{h= 2*IQR/m^(1/3)}. To see 
 certain regions of transcripts in greater detail (e.g. near the start 
 and stop codons), a specified \code{bin.width} per bin can be used to 
 check the local differential pattern, though it may lead to low power 
@@ -57,16 +57,14 @@ A list of binned P-site footprint matrices: in each matrix, rows
 correspond to replicates, columns correspond to bins.
 }
 \seealso{
-\code{\link[RiboDiPA]{PsiteMapping}}
+\code{\link[RiboDiPA]{psiteMapping}}
 }
 \examples{
-load(system.file("extdata","sample.Rdata",package="RiboDiPA"))
-data.binned <- DataBinning(data=data.psite$coverage, bin.width=0, 
-zero.omit=FALSE,
-    bin.from.5UTR=TRUE, cores=2)
-data.codon <- DataBinning(data=data.psite$coverage, bin.width=1, 
-zero.omit=FALSE,
-    bin.from.5UTR=TRUE, cores=2)
+data(data.psite)
+data.binned <- dataBinning(data = data.psite$coverage, bin.width = 0, 
+    zero.omit = FALSE, bin.from.5UTR = TRUE, cores = 2)
+data.codon <- dataBinning(data = data.psite$coverage, bin.width = 1, 
+    zero.omit = FALSE, bin.from.5UTR = TRUE, cores = 2)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

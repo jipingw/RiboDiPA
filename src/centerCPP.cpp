@@ -7,7 +7,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector psitecal(CharacterVector cigar, IntegerVector start, IntegerVector psitemap){
+NumericVector psiteCal(CharacterVector cigar, IntegerVector start, IntegerVector psitemap){
 
   int n=start.size();
   NumericVector center(n);

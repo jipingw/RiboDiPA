@@ -1,5 +1,5 @@
-\name{plot_track}
-\alias{plot_track}
+\name{plotTrack}
+\alias{plotTrack}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Plotting ribosome footprint data at the mapped P-site level
@@ -10,12 +10,12 @@ P-site frequency at the per nucleotide level along the total
 transcript. Plotting is implemented with the ggplot2 package.
 }
 \usage{
-plot_track(data, genes.list, replicates=NULL,exons=FALSE)
+plotTrack(data, genes.list, replicates = NULL,exons = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
 \item{data}{
-Data object from \code{PsiteMapping} function or wrapper function
+Data object from \code{psiteMapping} function or wrapper function
 \code{RiboDiPA}.
 }
 \item{genes.list}{
@@ -35,7 +35,7 @@ of the genes and replicates specified. If \code{exons} is \code{TRUE},
 Ribo-seq footprint per exon of specified genes is also output.
 }
 \examples{
-load(system.file("extdata","sample.Rdata",package="RiboDiPA"))
-plot_track(data=data.psite,genes.list=c("YDR050C","YDR064W"), 
-replicates=NULL,exons=FALSE)
+data(data.psite)
+plotTrack(data = data.psite, genes.list = c("YDR050C", "YDR064W"), 
+    replicates = NULL, exons = FALSE)
 }

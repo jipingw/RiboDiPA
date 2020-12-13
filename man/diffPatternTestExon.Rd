@@ -1,20 +1,21 @@
-\name{DPtest.exon}
-\alias{DPtest.exon}
+\name{diffPatternTestExon}
+\alias{diffPatternTestExon}
 \title{
 Main function for differential pattern analysis of exon-binned Ribo-seq data}
 \description{
-An alternative version of \code{DPtest} for exon level binning. Both data 
-binning and differential pattern analysis are implemented. Instead of a 
+An alternative version of \code{diffPatternTest} for exon level binning. Both
+data binning and differential pattern analysis are implemented. Instead of a 
 fixed width or adaptive method, the positions of exons in the genome are 
 used as bins. Therefore the number of exons per gene and their relative 
 sizes determines the bins used for differential pattern testing.}
 \usage{
-DPtest.exon(psitemap, classlabel, method = c("gtxr", "qvalue"))
+diffPatternTestExon(psitemap, classlabel, 
+    method = c("gtxr", "qvalue"))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
 \item{psitemap}{
-A list object from value of \code{PsiteMapping} function. In \code{psitemap},
+A list object from value of \code{psiteMapping} function. In \code{psitemap},
 list elements \code{coverage} and \code{exons} are required.
 }
 \item{classlabel}{
@@ -35,13 +36,13 @@ p-value adjustment. Methods include: "qvalue" for q-value from
 
 \details{
 For mammalian species, when the reads are sparse, it’s more meaningful 
-to perform a exon level pattern analysis. \code{DPtest.exon}() provides 
+to perform a exon level pattern analysis. \code{diffPatternTestExon}() provides
 the option of exon level pattern differentiation analysis by treating 
 each exon as one bin. But for organisms such as yeast, as most genes 
 only contain one exon, the exon-level analysis is not meaningful 
 since the analysis will simply result in the RNA-seq type of analysis,
 i.e. differential abundance test instead of the pattern analysis. 
-Using \code{DPtest.exon}() on yeast data is not for organisms with 
+Using \code{diffPatternTestExon}() on yeast data is not for organisms with 
 minimal alternative splicing or multiple exons. For a given gene, 
 the normalizing constant is estimated at codon level.
 }
@@ -71,15 +72,14 @@ The same as  input \code{method}.
 
 
 \examples{
-load(system.file("extdata","sample.Rdata",package="RiboDiPA"))
-classlabel <- data.frame(condition = c("mutant","mutant","wildtype",
-"wildtype"),
-    comparison=c(2,2,1,1))
-rownames(classlabel) <- names.sample
-result.exon <- DPtest.exon(psitemap=data.psite, classlabel=classlabel,
-    method=c('gtxr','qvalue'))
+data(data.psite)
+classlabel <- data.frame(condition = c("mutant", "mutant", 
+    "wildtype", "wildtype"), comparison=c(2, 2, 1, 1))
+rownames(classlabel) <- c("mutant1", "mutant2", "wildtype1", "wildtype2")
+result.exon <- diffPatternTestExon(psitemap = data.psite, 
+    classlabel = classlabel, method = c('gtxr', 'qvalue'))
 }
 \seealso{
-\code{DPtest}
+\code{diffPatternTest}
 }
 

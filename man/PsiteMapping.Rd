@@ -1,5 +1,5 @@
-\name{PsiteMapping}
-\alias{PsiteMapping}
+\name{psiteMapping}
+\alias{psiteMapping}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{P-site mapping
 }
@@ -8,8 +8,8 @@ This function computes the corresponding P-site locations of all
 RPFs and the total RPF read counts for all genes and samples.
 }
 \usage{
-PsiteMapping(bam_file_list, gtf_file, psite.mapping="auto",
-cores=NULL)
+psiteMapping(bam_file_list, gtf_file, psite.mapping = "auto", 
+    cores = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -81,19 +81,22 @@ Lauria, F., Tebaldi, T., Bernabò, P., Groen, E., Gillingwater, T. H.,
 in ribosome profiling data. PLoS computational biology, 14(8), e1006169.
 }
 \examples{
-sample_names <- c("WT1.bam","WT2.bam","MUT1.bam","MUT2.bam","eg.gtf")
+sample_names <- c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam", 
+    "eg.gtf")
 url <- "https://github.com/mhope321/RiboDipa/raw/master/"
-dest <- paste0(getwd(),"/")
+dest <- paste0(getwd(), "/")
 for (sample_file in sample_names){
-    download.file(paste0(url,sample_file),paste0(dest,sample_file))
+    download.file(paste0(url, sample_file), paste0(dest, 
+        sample_file))
 }
 
-bam_file_list <- list.files(path=dest,pattern=".bam$", full.names=TRUE)
-names.sample <- c("mutant1","mutant2","wildtype1","wildtype2")
-gtf_file <- list.files(path=dest,pattern=".gtf$", full.names=TRUE)
+bam_file_list <- list.files(path = dest, pattern = ".bam$", 
+    full.names = TRUE)
+gtf_file <- list.files(path = dest, pattern = ".gtf$", 
+    full.names = TRUE)
 
-data.psite <- PsiteMapping(bam_file_list=bam_file_list, gtf_file=gtf_file,
-    psite.mapping="auto",cores=2)
+data.psite <- psiteMapping(bam_file_list = bam_file_list, 
+    gtf_file = gtf_file, psite.mapping = "auto", cores = 2)
 }
 
 \keyword{P-site}% use one of  RShowDoc("KEYWORDS")

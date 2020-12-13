@@ -5,22 +5,22 @@
 
 using namespace Rcpp;
 
-// psitecal
-NumericVector psitecal(CharacterVector cigar, IntegerVector start, IntegerVector psitemap);
-RcppExport SEXP _RiboDiPA_psitecal(SEXP cigarSEXP, SEXP startSEXP, SEXP psitemapSEXP) {
+// psiteCal
+NumericVector psiteCal(CharacterVector cigar, IntegerVector start, IntegerVector psitemap);
+RcppExport SEXP _RiboDiPA_psiteCal(SEXP cigarSEXP, SEXP startSEXP, SEXP psitemapSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< CharacterVector >::type cigar(cigarSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type start(startSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type psitemap(psitemapSEXP);
-    rcpp_result_gen = Rcpp::wrap(psitecal(cigar, start, psitemap));
+    rcpp_result_gen = Rcpp::wrap(psiteCal(cigar, start, psitemap));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_RiboDiPA_psitecal", (DL_FUNC) &_RiboDiPA_psitecal, 3},
+    {"_RiboDiPA_psiteCal", (DL_FUNC) &_RiboDiPA_psiteCal, 3},
     {NULL, NULL, 0}
 };
 

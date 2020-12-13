@@ -1,5 +1,5 @@
-\name{DPtest}
-\alias{DPtest}
+\name{diffPatternTest}
+\alias{diffPatternTest}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Differential pattern analysis of Ribo-seq data
 }
@@ -11,12 +11,12 @@ p-values. The minimum of adjusted codon/bin-level p-value is
 defined to be the gene-level p-value.
 }
 \usage{
-DPtest(data, classlabel, method=c('gtxr','qvalue'))
+diffPatternTest(data, classlabel, method = c('gtxr', 'qvalue'))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
 \item{data}{
-A list of named matrices input from the \code{DataBinning} function.
+A list of named matrices input from the \code{dataBinning} function.
 In each element of the list, rows correspond to replicates, columns 
 correspond to bins.
 }
@@ -91,13 +91,12 @@ differential pattern.
 \code{\link[elitism]{p.adjust}}
 }
 \examples{
-load(system.file("extdata","sample.Rdata",package="RiboDiPA"))
-classlabel <- data.frame(condition = c("mutant","mutant","wildtype",
-"wildtype"),
-    comparison=c(2,2,1,1))
-rownames(classlabel) <- names.sample
-result.pst <- DPtest(data=data.binned, classlabel=classlabel,
-    method=c('gtxr','qvalue'))
+data(data.binned)
+classlabel <- data.frame(condition = c("mutant", "mutant", 
+    "wildtype", "wildtype"), comparison = c(2, 2, 1, 1))
+rownames(classlabel) <- c("mutant1", "mutant2", "wildtype1", "wildtype2")
+result.pst <- diffPatternTest(data = data.binned, 
+    classlabel = classlabel, method = c('gtxr', 'qvalue'))
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

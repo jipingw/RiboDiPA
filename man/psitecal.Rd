@@ -1,5 +1,5 @@
-\name{psitecal}
-\alias{psitecal}
+\name{psiteCal}
+\alias{psiteCal}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 P-site position of reads
@@ -10,12 +10,13 @@ string of the alignment and the start position of read. It is
 implemented as a C++ function using the Rcpp package.
 }
 \usage{
-psitecal(cigar, start, psitemap)
+psiteCal(cigar, start, psitemap)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
 \item{cigar}{
-A vector of CIGAR strings.}
+A vector of CIGAR strings.
+}
 \item{start}{
 A vector of read start positions.
 }
@@ -31,7 +32,7 @@ A vector of P-site positions for the reads.
 ex.cigar <- c("21M74731N7M", "2S11M57302N12M3S", "28M", "27M1S")
 ex.start <- c(177640, 249163, 249286, 249290)
 ex.psitemap <- c(9, 18, 9, 9)
-psitecal(ex.cigar, ex.start, ex.psitemap)
+psiteCal(ex.cigar, ex.start, ex.psitemap)
 }
 
 
