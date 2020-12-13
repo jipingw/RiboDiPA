@@ -144,7 +144,6 @@ and BAM files, separated by experiment and replicate.
 ```{r, warning=FALSE, message=FALSE}
 ## Download sample files from GitHub
 sample_names <- c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam", "eg.gtf")
-##url <- "https://github.com/mhope321/RiboDipa/raw/master/"
 url <- "https://github.com/jipingw/RiboDiPA-data/raw/master/"
 dest <- paste0(getwd(), "/")
 for (sample_file in sample_names){
@@ -154,8 +153,7 @@ for (sample_file in sample_names){
 
 ```{r, warning=FALSE, message=FALSE}
 ## Get BAM files from the RiboDiPA package
-bam_file_list <- list.files(path = dest, pattern = ".bam$", 
-    full.names = TRUE)
+bam_file_list <- paste0(dest, c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam"))
 names.sample <- sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", 
     bam_file_list)
 ```
@@ -167,7 +165,7 @@ region that contains 16 genes. Alternatively, users can declare the names
 of their BAM files directly in a vector.
 ```{r, warning=FALSE, message=FALSE}
 ## Get the GTF file used for alignment
-gtf_file <- list.files(path = dest, pattern = ".gtf$", full.names = TRUE)
+gtf_file <- paste0(dest, "eg.gtf")
 ```
 We recommend that users utilize the identical GTF file used to produce the 
 experimental alignments. For example, a GTF file sourced from Ensembl will

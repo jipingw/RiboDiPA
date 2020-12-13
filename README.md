@@ -70,8 +70,7 @@ for (sample_file in sample_names){
 
 ```r
 ## Get BAM files from the RiboDiPA package
-bam_file_list <- list.files(path = dest, pattern = ".bam$", 
-    full.names = TRUE)
+bam_file_list <- paste0(dest, c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam"))
 names.sample <- sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", 
     bam_file_list)
 ```
@@ -79,7 +78,7 @@ This will produce a list of four BAM files: WT1.bam, WT2.bam, MUT1.bam, and MUT2
 
 ```r
 ## Get the GTF file used for alignment
-gtf_file <- list.files(path = dest, pattern = ".gtf$", full.names = TRUE)
+gtf_file <- paste0(dest, "eg.gtf")
 ```
 We recommend that users utilize the identical GTF file used to produce the experimental alignments. For example, a GTF file sourced from Ensembl will not work with BAM files aligned with a GTF file sourced from UCSC. The GTF file, "eg.gtf", provided in the package is adapted from Ensembl, Saccharomyces cerevisiae release R64-1-1, and only contains features on chromosome IV. Users may also declare their GTF file directly.
 
