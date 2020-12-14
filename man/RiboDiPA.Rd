@@ -104,6 +104,7 @@ The P-site mapping rule or A-site mapping rule used.
 }
 
 \examples{
+\dontrun{
 sample_names <- c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam", 
     "eg.gtf")
 url <- "https://github.com/jipingw/RiboDiPA-data/raw/master/"
@@ -111,7 +112,6 @@ dest <- paste0(getwd(),"/")
 for (sample_file in sample_names){
     download.file(paste0(url, sample_file), paste0(dest, sample_file))
 }
-
 bam_file_list <- paste0(dest, c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam"))
 names.sample <- c("mutant1","mutant2","wildtype1","wildtype2")    
 gtf_file <- paste0(dest, "eg.gtf")
@@ -122,6 +122,7 @@ classlabel <- data.frame(
 )
 rownames(classlabel) <- names.sample
 result.pip <- RiboDiPA(bam_file_list, gtf_file, classlabel, cores=2)
+}
 }
 \seealso{
 \code{\link[RiboDiPA]{psiteMapping}, \link[RiboDiPA]{dataBinning}, 

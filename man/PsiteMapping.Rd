@@ -81,6 +81,7 @@ Lauria, F., Tebaldi, T., Bernabò, P., Groen, E., Gillingwater, T. H.,
 in ribosome profiling data. PLoS computational biology, 14(8), e1006169.
 }
 \examples{
+\dontrun{
 sample_names <- c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam", 
     "eg.gtf")
 url <- "https://github.com/mhope321/RiboDipa/raw/master/"
@@ -90,13 +91,12 @@ for (sample_file in sample_names){
         sample_file))
 }
 
-bam_file_list <- list.files(path = dest, pattern = ".bam$", 
-    full.names = TRUE)
-gtf_file <- list.files(path = dest, pattern = ".gtf$", 
-    full.names = TRUE)
+bam_file_list <- paste0(dest, c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam"))
+gtf_file <- paste0(dest, "eg.gtf")
 
 data.psite <- psiteMapping(bam_file_list = bam_file_list, 
     gtf_file = gtf_file, psite.mapping = "auto", cores = 2)
+}
 }
 
 \keyword{P-site}% use one of  RShowDoc("KEYWORDS")
