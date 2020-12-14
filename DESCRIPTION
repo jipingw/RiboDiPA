@@ -2,7 +2,7 @@ Package: RiboDiPA
 Type: Package
 Title: Differential pattern analysis for Ribo-seq data
 Date: 2020-10-31
-Version: 0.99.7
+Version: 0.99.8
 Authors@R:
     c(person(given = "Keren",
              family = "Li",
