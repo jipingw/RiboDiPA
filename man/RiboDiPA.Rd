@@ -104,7 +104,7 @@ The P-site mapping rule or A-site mapping rule used.
 }
 
 \examples{
-\dontrun{
+\donttest{
 sample_names <- c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam", 
     "eg.gtf")
 url <- "https://github.com/jipingw/RiboDiPA-data/raw/master/"
