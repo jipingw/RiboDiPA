@@ -2,7 +2,7 @@ Package: RiboDiPA
 Type: Package
 Title: Differential pattern analysis for Ribo-seq data
 Date: 2020-10-31
-Version: 0.99.8
+Version: 0.99.9
 Authors@R:
     c(person(given = "Keren",
              family = "Li",
@@ -26,7 +26,7 @@ Imports: Rcpp (>= 1.0.2), graphics, stats, data.table, elitism,
         methods, S4Vectors, IRanges, GenomicRanges, matrixStats,
         reldist, doParallel, foreach, parallel, qvalue, DESeq2, ggplot2
 LinkingTo: Rcpp
-Depends: R (>= 4.1), Rsamtools, GenomicFeatures, GenomicAlignments
+Depends: R (>= 4.0), Rsamtools, GenomicFeatures, GenomicAlignments
 NeedsCompilation: yes
 RoxygenNote: 6.1.1
 Suggests: knitr, rmarkdown

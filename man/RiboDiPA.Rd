@@ -109,17 +109,17 @@ sample_names <- c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam",
 url <- "https://github.com/jipingw/RiboDiPA-data/raw/master/"
 dest <- paste0(getwd(),"/")
 for (sample_file in sample_names){
-    download.file(paste0(url, sample_file), paste0(dest, 
-        sample_file))
+    download.file(paste0(url, sample_file), paste0(dest, sample_file))
 }
 
 bam_file_list <- paste0(dest, c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam"))
-names.sample <- sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", 
-    bam_file_list)
+names.sample <- c("mutant1","mutant2","wildtype1","wildtype2")    
 gtf_file <- paste0(dest, "eg.gtf")
 
-classlabel <- data.frame(condition = c("mutant", "mutant", 
-    "wildtype", "wildtype"), comparison = c(2, 2, 1, 1))
+classlabel <- data.frame(
+    condition = c("mutant", "mutant", "wildtype", "wildtype"),
+    comparison = c(2, 2, 1, 1)
+)
 rownames(classlabel) <- names.sample
 result.pip <- RiboDiPA(bam_file_list, gtf_file, classlabel, cores=2)
 }
