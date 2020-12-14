@@ -19,11 +19,13 @@ vignette: >
 
 ```{r setup, include = FALSE}
 library(RiboDiPA)
+data(package="RiboDiPA")
 knitr::opts_chunk$set(
     collapse = TRUE,
     comment = "#>"
 )
 ```
+
 
 **Reference for Method**:
 Li K., Hope C.M., Wang X.A., Wang J.-P. (2020) "RiboDiPA: A novel tool for
@@ -62,6 +64,7 @@ if(!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("RiboDiPA")
 ```
+
 
 ## Input files required to run RiboDiPA 
 
@@ -186,9 +189,9 @@ requires a column named `comparison` which labels the reference condition
 "1" and the treatment condition "2", with the option of including conditions 
 that should not be compared labeled with "0". In this case "wildtype" 
 represents the reference condition, and "mutant" represents the treatment.
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE,eval=FALSE}
 ## Run the RiboDiPA pipeline with default parameters
-result.pip <- RiboDiPA(bam_file_list, gtf_file, classlabel, cores = 2)
+result.pst <- RiboDiPA(bam_file_list, gtf_file, classlabel, cores = 2)
 ```
 The `RiboDiPA()` function is a wrapper function that calls all other necessary
 functions in the package. The default approaches for this wrapper are to do
@@ -202,7 +205,7 @@ cores is set to the value of `detectCores(logical = FALSE)`).
 
 ```{r}
 ## View the table of output from RiboDiPA
-head(result.pip$gene[order(result.pip$gene$qvalue), ])
+head(result.pst$gene[order(result.pst$gene$qvalue), ])
 ```
 The `RiboDiPA()` function outputs a list of genes with their $T$-value, 
 $p$-value, and adjusted $p$-values indicated, stored in the value `gene`, 
@@ -212,9 +215,9 @@ see the most significant genes genome-wide, which we show above. Genes
 YDR049-YDR065 are located within the interval selected for this vignette, 
 and we can clearly see highly significant gene hits with TPI1 and RPS13 
 (YDR050C and YDR064W, respectively), with $q$-values of 
-`r formatC(result.pip$gene["YDR050C", "qvalue"], format = "e", digits = 2)`
+`r formatC(result.pst$gene["YDR050C", "qvalue"], format = "e", digits = 2)`
 and 
-`r formatC(result.pip$gene["YDR064W", "qvalue"], format = "e", digits = 2)`.
+`r formatC(result.pst$gene["YDR064W", "qvalue"], format = "e", digits = 2)`.
 
 This completes the bare minimum requirements for finding genes with 
 significant differential patterns, and subsequent sections will walk 
@@ -236,7 +239,7 @@ experiment. RiboDiPA circumvents this problem by combining all exons into
 a "total transcript" and performs testing at the gene level. Therefore, 
 in addition to the P-site offset generation and mapping, the `psiteMapping()`
 function also generates total transcript coordinates for each exon.
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE,eval=FALSE}
 ## Perform individual P-site mapping procedure
 data.psite <- psiteMapping(bam_file_list = bam_file_list, 
     gtf_file = gtf_file, psite.mapping = "auto", cores = 2)
