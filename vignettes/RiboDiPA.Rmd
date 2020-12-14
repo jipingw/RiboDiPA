@@ -26,7 +26,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-
 **Reference for Method**:
 Li K., Hope C.M., Wang X.A., Wang J.-P. (2020) "RiboDiPA: A novel tool for
 differential pattern analysis in Ribo-seq data." *Nucleic Acid Research*,
@@ -77,28 +76,34 @@ The RiboDiPA R package executes four major functions to perform differential
 pattern analysis of Ribo-seq data, with optional visualization of results. 
 An overview of the process can be seen in Figure 1: 
 
-![A diagram of RiboDiPA.](Figure1.png){width=90%} 
+<center>
 
-A) **GTF file parsing and exon merging**: For a given gene, all exons 
+![Figure 1](Figure1.png){width=70%} 
+
+</center>
+
+\newline\newline
+
+a) **GTF file parsing and exon merging**: For a given gene, all exons 
 annotated in the GTF file are merged into a total transcript. This provides
 a global picture of changes across conditions for a gene, as the total 
 transcript will capture changes in ribosome occupancy even when transcript
 isoform usage might change across conditions.
 
-B) **BAM file processing and P-site mapping**: The Ribo-seq alignment 
+b) **BAM file processing and P-site mapping**: The Ribo-seq alignment 
 files (.bam) are processed to calculate the P-site position for each RPF, 
 with adaptable rules that users’ can specify to call P-sites from the data. 
 The mapped P-site frequency at each nucleotide position along the total 
 transcript is compiled for each gene of each sample.
 
-C) **Data binning**: To overcome the inherent sparseness of Ribo-seq data,
+c) **Data binning**: To overcome the inherent sparseness of Ribo-seq data,
 P-site positions are merged into bins using one of three methods: 1) an 
 adaptive bin-width method that varies by gene, based on the Freedman-Diaconis
 rule 2) a fixed bin width method (as small as a single codon) that the user 
 may specify, or 3) binning  by exon, using boundaries specified in the GTF 
 file. 
 
-D) **Differential pattern analysis**: Pattern analysis of genes is performed
+d) **Differential pattern analysis**: Pattern analysis of genes is performed
 on binned data for a given gene, comparing bin by bin across conditions to
 identify regions with statistically significant differences. The results of
 this testing are output as $p$-values and $q$-values for each gene. 
