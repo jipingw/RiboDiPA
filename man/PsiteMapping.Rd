@@ -83,11 +83,10 @@ in ribosome profiling data. PLoS computational biology, 14(8), e1006169.
 \examples{
 sample_names <- c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam", 
     "eg.gtf")
-url <- "https://github.com/mhope321/RiboDipa/raw/master/"
+url <- "https://github.com/jipingw/RiboDiPA-data/raw/master/"
 dest <- paste0(getwd(), "/")
 for (sample_file in sample_names){
-    download.file(paste0(url, sample_file), paste0(dest, 
-        sample_file))
+    download.file(paste0(url, sample_file), paste0(dest, sample_file))
 }
 
 bam_file_list <- paste0(dest, c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam"))
