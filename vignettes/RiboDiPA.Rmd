@@ -19,7 +19,6 @@ vignette: >
 
 ```{r setup, include = FALSE}
 library(RiboDiPA)
-data(package="RiboDiPA")
 knitr::opts_chunk$set(
     collapse = TRUE,
     comment = "#>"
@@ -151,19 +150,11 @@ execution of the Ribo-DiPA pipeline, which minimally requires a GTF file
 and BAM files, separated by experiment and replicate.
 ```{r, warning=FALSE, message=FALSE}
 ## Download sample files from GitHub
-sample_names <- c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam", "eg.gtf")
+library(BiocFileCache)
+file_names <- c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam", "eg.gtf")
 url <- "https://github.com/jipingw/RiboDiPA-data/raw/master/"
-dest <- paste0(getwd(), "/")
-for (sample_file in sample_names){
-    download.file(paste0(url, sample_file), paste0(dest, sample_file))
-}
-```
-
-```{r, warning=FALSE, message=FALSE}
-## Get BAM files from the RiboDiPA package
-bam_file_list <- paste0(dest, c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam"))
-names.sample <- sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", 
-    bam_file_list)
+bfc <- BiocFileCache()
+bam_path <- bfcrpath(bfc,paste0(url,file_names))
 ```
 This will produce a list of four BAM files: WT1.bam, WT2.bam, MUT1.bam, 
 and MUT2.bam, which represent two biological replicates each of wild type 
@@ -171,10 +162,7 @@ cells and New1 mutant cells, respectively. These BAM files were subset on
 the interval chrIV:553,166-581,762 using samtools, which is a roughly 30kb
 region that contains 16 genes. Alternatively, users can declare the names 
 of their BAM files directly in a vector.
-```{r, warning=FALSE, message=FALSE}
-## Get the GTF file used for alignment
-gtf_file <- paste0(dest, "eg.gtf")
-```
+
 We recommend that users utilize the identical GTF file used to produce the 
 experimental alignments. For example, a GTF file sourced from Ensembl will
 not work with BAM files aligned with a GTF file sourced from UCSC. The GTF 
@@ -187,16 +175,16 @@ classlabel <- data.frame(
     condition = c("mutant", "mutant", "wildtype", "wildtype"),
     comparison = c(2, 2, 1, 1)
 )
-rownames(classlabel) <- names.sample
+rownames(classlabel) <- c("mutant1","mutant2","wildtype1","wildtype2")
 ```
 The class label determines the comparison performed by RiboDiPA, and minimally 
 requires a column named `comparison` which labels the reference condition 
 "1" and the treatment condition "2", with the option of including conditions 
 that should not be compared labeled with "0". In this case "wildtype" 
 represents the reference condition, and "mutant" represents the treatment.
-```{r, warning=FALSE, message=FALSE,eval=FALSE}
+```{r, warning=FALSE, message=FALSE}
 ## Run the RiboDiPA pipeline with default parameters
-result.pst <- RiboDiPA(bam_file_list, gtf_file, classlabel, cores = 2)
+result.pst <- RiboDiPA(bam_path[1:4], bam_path[5], classlabel, cores = 2)
 ```
 The `RiboDiPA()` function is a wrapper function that calls all other necessary
 functions in the package. The default approaches for this wrapper are to do
@@ -244,10 +232,10 @@ experiment. RiboDiPA circumvents this problem by combining all exons into
 a "total transcript" and performs testing at the gene level. Therefore, 
 in addition to the P-site offset generation and mapping, the `psiteMapping()`
 function also generates total transcript coordinates for each exon.
-```{r, warning=FALSE, message=FALSE,eval=FALSE}
+```{r, warning=FALSE, message=FALSE}
 ## Perform individual P-site mapping procedure
-data.psite <- psiteMapping(bam_file_list = bam_file_list, 
-    gtf_file = gtf_file, psite.mapping = "auto", cores = 2)
+data.psite <- psiteMapping(bam_file_list = bam_path[1:4], 
+    bam_path[5], psite.mapping = "auto", cores = 2)
 ```
 P-site mapping outputs a list of values: `coverage`, the coverage across 
 each gene; `counts`, the number of P-sites counts per gene; `exons`, the
@@ -290,7 +278,7 @@ organism, to insure consistency in the comparison.
 ## Use user specified psite mapping offset rule
 offsets <- cbind(qwidth = c(28, 29, 30, 31, 32), 
     psite = c(18, 18, 18, 19, 19))
-data.psite2 <- psiteMapping(bam_file_list, gtf_file, 
+data.psite2 <- psiteMapping(bam_path[1:4], bam_path[5], 
     psite.mapping = offsets, cores = 2)
 ```
 

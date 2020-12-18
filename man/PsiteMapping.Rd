@@ -81,19 +81,20 @@ Lauria, F., Tebaldi, T., Bernabò, P., Groen, E., Gillingwater, T. H.,
 in ribosome profiling data. PLoS computational biology, 14(8), e1006169.
 }
 \examples{
-sample_names <- c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam", 
-    "eg.gtf")
+library(BiocFileCache)
+file_names <- c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam", "eg.gtf")
 url <- "https://github.com/jipingw/RiboDiPA-data/raw/master/"
-dest <- paste0(getwd(), "/")
-for (sample_file in sample_names){
-    download.file(paste0(url, sample_file), paste0(dest, sample_file))
-}
+bfc <- BiocFileCache()
+bam_path <- bfcrpath(bfc,paste0(url,file_names))
 
-bam_file_list <- paste0(dest, c("WT1.bam", "WT2.bam", "MUT1.bam", "MUT2.bam"))
-gtf_file <- paste0(dest, "eg.gtf")
+classlabel <- data.frame(
+    condition = c("mutant", "mutant", "wildtype", "wildtype"),
+    comparison = c(2, 2, 1, 1)
+)
+rownames(classlabel) <- c("mutant1","mutant2","wildtype1","wildtype2") 
 
-data.psite <- psiteMapping(bam_file_list = bam_file_list, 
-    gtf_file = gtf_file, psite.mapping = "auto", cores = 2)
+data.psite <- psiteMapping(bam_file_list = bam_path[1:4], 
+    gtf_file = bam_path[5], psite.mapping = "auto", cores = 2)
 
 }
 
