@@ -16,7 +16,7 @@ NumericVector psiteCal(CharacterVector cigar, IntegerVector start, IntegerVector
 
   for (int i=0; i < n; i++){
 
-    char temp[strlen(cigar[i])];
+    char temp[strlen(cigar[i])+1];
     strcpy(temp,cigar[i]);
     /*Rcout << temp<<std::endl;*/
     char * pch;
