@@ -13,7 +13,7 @@ pattern results, etc.
 \format{
     A list of size 5
 \describe{
-\item{bin}{A list object of codon/bin-level results. Each element 
+\item{bin}{A list object of codon/bin-level test results. Each element 
 of the list is the result from  a gene, containing columns: \code{pvalue},
 \code{log2FoldChange}, and the adjusted p-value by method "gtxr"}       
 \item{gene}{Gene-level differential pattern results, including T-value, 
@@ -22,7 +22,9 @@ p-value, and q-value}
 \item{data}{The input data for differential pattern analysis in the format of 
 a list of named matrices. In each element of the list, rows correspond to 
 replicates,columns correspond to bins.}
-\item{method}{See \code{diffPatternTest}}
+\item{method}{See \code{diffPatternTest}.}
+\item{small}{Names of genes without sufficient reads, not reported in
+\code{bin} and \code{gene}.}
 }}
 \source{
 The data was adapted from Kasari et al 2019.

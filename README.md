@@ -311,6 +311,117 @@ for choosing which genes to plots when the gene list is large. A threshold
 value of 0.05 will only plot genes with an adjusted $p$-value of less than
 or equal to 0.05.
 
+### 4. visualizing through genome browser
+
+Three functions, `bpTrack()`, `binTrack()`, and `exonTrack()`, 
+are provided to support the track plotting through genome browser by utilizing
+`igvR`. The uses can examine the ribosome footprint in the genomic 
+landscape and the differential pattern test results. All three functions output
+`GRanges` objects as input of `igvR` for track visualization, respectively, 
+RPF in base pair, binned RPF from `diffPatternTest()` with differential 
+pattern test results, and RPF by exons with test results.
+
+To visualize these tracks in genome browser, users should install `igvR` 
+through Bioconductor. Some simple illustration examples are given below.
+
+```r
+##base-bair RPF track
+library(igvR)
+thred <- 0.05
+igv <- igvR()
+setBrowserWindowTitle(igv, "ribosome footprint track example")
+setGenome(igv, "saccer3")
+
+data(data.psite)
+names.rep <- c("mutant1", "mutant2", "wildtype1", "wildtype2")
+tracks.bp <- bpTrack(data = data.psite, names.rep = names.rep, 
+    genes.list = c("YDR050C", "YDR062W", "YDR064W"))
+
+for(track.name in names.rep){
+    track.rep <- tracks.bp[[track.name]]
+    track <- GRangesQuantitativeTrack(trackName = paste(track.name, "bp"),
+        track.rep[,1], color = "green")
+    displayTrack(igv, track)
+}}
+```
+
+```r
+## bin track and test results
+data(result.pst)
+data(data.psite)
+tracks.bin <- binTrack(data = result.pst, exon.anno = data.psite$exons)
+
+for(track.name in names(tracks.bin)){
+    track.rep <- tracks.bin[[track.name]]
+    resize(track.rep, width(track.rep) + 1)
+    track <- GRangesQuantitativeTrack(trackName = paste(track.name, "binned"),
+        track.rep[,1], color = "black")
+    displayTrack(igv, track)
+}
+
+track.rep2 <- tracks.bin[[1]]
+sig.bin <- (values(track.rep2)[,5] <= thred)
+log10.padj <- - log10(values(track.rep2)[,5])
+mcols(track.rep2) <- data.frame(log10padj = log10.padj)
+track.rep2 <- track.rep2[which(sig.bin),]
+track <- GRangesQuantitativeTrack(trackName = "- log 10 of padj",
+    track.rep2, color = "red", trackHeight = 40)
+displayTrack(igv, track)
+```
+
+The first input argument of `bpTrack()`, `data`, is the output object of 
+`psiteMapping()` or `RiboDiPA()` function. If the replicate names 
+`names.rep` is not specified, column names of `data$counts` will be used
+as track label on `igvR` visualization. Also, if a list of genes for 
+visualization is not provided, then all genes listed in `data$coverage`
+will be plotted.
+
+The function `binTrack()` uses the output object of `diffPatterbTest()` 
+or `RiboDiPA()` function for the argument `data`, and the value `exons` of
+`psiteMapping()` function output for the argument `exon.anno`. Besides of 
+ribosome binned tracks, differential pattern test results is also reported
+in the value of `binTrack()`. In Figure 2, a both base-pair 
+RPF track and binned track are shown through `igvR`. The green bars are 
+the ribosome tracks per bp, the black bars are the binned tracks, while red
+bars are plotted at significant bins (i.e., adjusted bin-level p-value 
+$\leq 0.05$), with 
+$-\log_{10}$ of adjusted p-value also plotted. 
+
+
+![igvR genome browser.](https://github.com/jipingw/RiboDiPA-data/raw/master/igvR.png) 
+
+
+```r
+## bin track and test results
+igv2 <- igvR()
+setBrowserWindowTitle(igv2, "ribosome footprint per exon example")
+setGenome(igv2, "saccer3")
+data(result.exon)
+tracks.exon <- exonTrack(data = result.exon, gene = "tY(GUA)D")
+for(track.name in names(tracks.exon)){
+    track.rep <- tracks.exon[[track.name]]
+    for(tx.name in names(track.rep)){
+        track.tx <- tracks.exon[[track.name]][[tx.name]]
+        track <- GRangesQuantitativeTrack(trackName = 
+            paste(track.name, tx.name), track.tx[,1], color = track.name)
+        displayTrack(igv2, track)
+    }
+}
+```
+
+For higher organisms, where exons are used as the bins for statistical 
+testing through the function `diffPatternTestExon()`, `exonTrack()` is the 
+proper function to output tracks for visualization purpose. It outputs a list
+of lists. Each element is a list of `GRanges` objects representing replicates,
+and each second level list element is exon-level P-site footprint counts in a
+transcript.
+
+The argument `data` uses the output object of `diffPatternTestExon()`. 
+The second argument `gene` requires a single gene name to be plotted, since 
+different genes may have different number of transcripts.
+
+
+
 ### Conclusion
 Thus concludes our vignette. For additional information, please consult the reference manual for each individual function, as well as the associated paper for this package for methodological details (Li et al, 2020)
 

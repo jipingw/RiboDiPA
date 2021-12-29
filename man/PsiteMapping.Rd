@@ -64,16 +64,16 @@ data binning and downstream analysis, among other data objects.
 \item{coverage}{A list object of matrices. Each element is a matrix 
 representing the P-site footprints of a gene. Rows correspond to replicates
 and columns corrspond to nucleotide location with respect to the total 
-transcript.
+transcript. Each column is named by its genomic coordinate.
 }
 \item{counts}{A matrix object of read counts. Rows correspond to genes 
 and columns correspond to replicates.}
-\item{exons}{A List object of matrices. Each element contains the relative
-start and end positions of exons in the gene with respect to the total 
-transcript for that given gene}
 \item{psite.mapping}{
 The P-site (or A-site) mapping rule used to map RPFs to P-site positions.
 }
+\item{exons}{A List object of matrices. Each element contains the relative
+start and end positions of exons in the gene with respect to the total 
+transcript for that given gene, as well as genomic start and end coordinates.}
 }
 \references{
 Lauria, F., Tebaldi, T., Bernabò, P., Groen, E., Gillingwater, T. H., 

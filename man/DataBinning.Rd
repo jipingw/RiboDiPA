@@ -54,7 +54,8 @@ at small fold change positions and potentially high computational time.
 }
 \value{
 A list of binned P-site footprint matrices: in each matrix, rows 
-correspond to replicates, columns correspond to bins.
+correspond to replicates, columns correspond to bins. Bin names are
+set to "start-end" genomic coordinates.
 }
 \seealso{
 \code{\link[RiboDiPA]{psiteMapping}}

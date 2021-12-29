@@ -29,10 +29,11 @@ psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     names.sample <- sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", 
         bam_file_list)
     names.sample <- sub(".bam", "", names.sample)
-
     # Parse gtf file to create GRangesList object
     txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file)
-    all_genes <- GenomicFeatures::exonsBy(txdb, by="gene")
+    all_exons <- GenomicFeatures::exons(txdb, 
+        columns=c("EXONNAME","TXNAME","GENEID"), use.names = TRUE)
+    all_genes <- split(all_exons, unlist(values(all_exons)$GENEID))
     # exclude genes on two strands
     all_genes <- all_genes[vapply(runValue(strand(all_genes)), length,
         integer(1)) == 1]
@@ -44,13 +45,42 @@ psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     message("done\n")
     # merge overlapping exons in total transcript
     all_genes <- IRanges::reduce(all_genes)
-
+    # p-site mapping
     results_all <- .pMappingAll(bam_file_list=bam_file_list,
         psite.mapping=psite.mapping, txdb=txdb, all_genes=all_genes,
         cores=cores)
     colnames(results_all$counts) <- names.sample
+    # assign genomic coordinates as names of sites
+    tmp <- mapply(.coordGene, results_all$coverage, exons.coord)
+    results_all$coverage <- tmp
     results_all$exons <- exons.coord
     return(results_all)
+}
+
+.coordGene <- function(coverage.gene,coord.gene){
+    strands <- coord.gene[,"strand"][1]
+    if(strands == "+"){
+        coord.tmp <- IRanges(coord.gene[,"start_genome"],
+            coord.gene[,"end_genome"])
+        coord.tmp <- BiocGenerics::union(coord.tmp, coord.tmp)
+        result <- NULL
+        for(i in seq_len(length(coord.tmp))){
+            result <- c(result,seq(from=start(coord.tmp)[i], 
+                to=end(coord.tmp)[i]))
+        }
+        colnames(coverage.gene) <- result
+    }else{
+        coord.tmp <- IRanges(coord.gene[,"end_genome"],
+            coord.gene[,"start_genome"])
+        coord.tmp <- BiocGenerics::union(coord.tmp, coord.tmp)
+        result <- NULL
+        for(i in seq_len(length(coord.tmp))){
+            result <- c(result,seq(from=start(coord.tmp)[i], 
+                to=end(coord.tmp)[i]))
+        }
+        colnames(coverage.gene) <- rev(result)
+    }
+    return(coverage.gene)
 }
 
 .createAnno <- function(txdb) {
@@ -173,7 +203,7 @@ psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
         }
     }
     if (psite.mapping[1] == "auto") {
-        cat("Computing P-site offsets \n")
+        message("Computing P-site offsets \n")
         psite.mapping <- .psiteOffset(bam_file_list=bam_file_list, txdb=txdb)
     }
     if (is.null(cores)) {
@@ -284,12 +314,33 @@ psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
 
 .totalTransciptCoordinate <- function(x) {
     range.gene <- cbind(start(x), end(x))
-    range.gene2 <- IRanges(start(x), end(x))
-    range.gene2 <- as.matrix(union(range.gene2, range.gene2))
-    range.relative <- matrix(vapply(range.gene,
-        function(x) .segCal(x, range.gene2), numeric(1)), ncol=2)
-    rownames(range.relative) <- x$exon_name
-    colnames(range.relative) <- c("start", "end")
+    strands <- as.character(strand(x))[1]
+    starts <- start(x)
+    ends <- end(x)
+    if(strands=="+"){
+        range.gene2 <- IRanges(starts, ends)
+        range.gene2 <- as.matrix(BiocGenerics::union(range.gene2, range.gene2))
+        range.relative <- matrix(vapply(range.gene,
+            function(x) .segCal(x, range.gene2), numeric(1)), ncol=2)
+        range.relative <- cbind(range.relative, range.gene)
+        rownames(range.relative) <- unlist(x$EXONNAME) 
+    }else{
+        m <- max(start(x),end(x))+1
+        range.gene1 <- cbind(rev(m-ends),rev(m-starts))
+        range.gene2 <- IRanges(range.gene1[,1],range.gene1[,2])
+        range.gene2 <- as.matrix(BiocGenerics::union(range.gene2, range.gene2))
+        range.relative <- matrix(vapply(range.gene1,
+            function(x) .segCal(x, range.gene2), numeric(1)), ncol=2)
+        range.relative <- cbind(range.relative,
+            rev(range.gene[,2]), rev(range.gene[,1]))
+        rownames(range.relative) <- rev(unlist(x$EXONNAME))
+    }
+    colnames(range.relative) <- c("start_tranx", "end_tranx","start_genome",
+        "end_genome")
+    range.relative <- as.data.frame(range.relative)
+    range.relative$seqnames <- as.character(seqnames(x))
+    range.relative$strand <- strands
+    range.relative$txname <- unlist(x$TXNAME)
     return(range.relative)
 }
 
@@ -305,39 +356,10 @@ dataBinning <- function(data, bin.width=0, zero.omit=FALSE, bin.from.5UTR=TRUE,
     gene <- NULL
     message("Data binning ...")
     DATA.BIN <- foreach(gene=genes.list, .final=function(x) setNames(x,
-        genes.list), .packages="reldist", .export=".app2Exact") %dopar% {
-        data1 <- data[[gene]]
-        n <- nrow(data1)
-        p <- ncol(data1)
-        p.codon <- ceiling(p/3)  # merge every 3 nt into a codon
-        ifelse(bin.from.5UTR, data.codon <- t(apply(data1, 1, function(x) {
-            unname(tapply(x, (seq_along(x) - 1)%/%3, sum))
-        })), data.codon <- t(apply(data1, 1, function(x) {
-            rev(unname(tapply(rev(x), (seq_along(rev(x)) - 1)%/%3, sum)))
-        })))
-        colnames(data.codon) <- seq_len(ncol(data.codon))
-        if (bin.width == 1) return(data.codon) # codon level
-        if (sum(data1)) {
-            if (bin.width) {
-                p.bin <- ceiling(p.codon/bin.width)  # fixed
-            } else {
-                n.data <- mean(rowSums(data.codon))
-                iqr.data <- abs(wtd.iqr(x=seq_len(p.codon),
-                    weight=colMeans(data.codon)))
-                n.bin <- ceiling(p.codon/(2 * iqr.data/(n.data^(1/3))))
-                p.bin <- min(p.codon, n.bin)  # adaptive
-            }
-            bin.size <- .app2Exact(ncol(data.codon), rep(1/p.bin, p.bin))
-            if (!bin.from.5UTR) bin.size <- rev(bin.size)
-            Bin.size <- c(0, cumsum(bin.size))
-            data.bin <- do.call("cbind",lapply(split(seq_len(ncol(data.codon)),
-                cut(seq_len(ncol(data.codon)), Bin.size)), function(x) {
-                rowSums(data.codon[, x, drop=FALSE])
-            }))
-        } else data.bin <- matrix(0, nrow=n, ncol=1)
-        if (zero.omit) data.bin <- data.bin[,colSums(data.bin) > 0, drop=FALSE]
-        if (is.vector(data.bin)) data.bin <- matrix(data.bin, ncol=1)
-        data.bin
+        genes.list), .packages="reldist", 
+        .export=c(".app2Exact",".binning"))  %dopar% {
+            data1 <- data[[gene]]
+            .binning(data1, bin.width, zero.omit, bin.from.5UTR)
     }
     stopImplicitCluster()
     stopCluster(cl)
@@ -345,6 +367,55 @@ dataBinning <- function(data, bin.width=0, zero.omit=FALSE, bin.from.5UTR=TRUE,
     return(DATA.BIN)
 }
 
+.binning <- function(data1, bin.width, zero.omit, bin.from.5UTR){
+    n <- nrow(data1)
+    p <- ncol(data1)
+    p.codon <- ceiling(p/3)  # merge every 3 nt into a codon
+    ifelse(bin.from.5UTR, bin.codon <- (seq_len(p) - 1)%/%3,
+        bin.codon <- rev((rev(seq_len(p)) - 1)%/%3))
+    data.codon <- t(apply(data1, 1, function(x) 
+        unname(tapply(x, bin.codon, sum))))
+    names.codon <- unname(tapply(colnames(data1), bin.codon, function(x)
+        paste(x[1],tail(x,n=1), sep="-")))
+    colnames(data.codon) <- names.codon
+    if (bin.width == 1) return(data.codon) # return codon level
+    if (sum(data1)) {
+        if (bin.width) {
+            p.bin <- ceiling(p.codon/bin.width)  # fixed width
+        } else {
+            n.data <- mean(rowSums(data.codon))
+            iqr.data <- abs(wtd.iqr(x=seq_len(p.codon),
+                weight=colMeans(data.codon)))
+            n.bin <- ceiling(p.codon/(2 * iqr.data/(n.data^(1/3))))
+            p.bin <- min(p.codon, n.bin)  # adaptive width
+        }
+        bin.size <- .app2Exact(p.codon, rep(1/p.bin, p.bin))
+        if (!bin.from.5UTR) bin.size <- rev(bin.size)
+        Bin.size <- c(0, cumsum(bin.size))
+        data.bin <- do.call("cbind",lapply(split(seq_len(p.codon),
+            cut(seq_len(p.codon), Bin.size)), function(x) {
+            rowSums(data.codon[, x, drop=FALSE])}))
+        bin.size2 <- do.call(c,lapply(split(unname(table((
+            seq_len(p) - 1)%/%3)),cut(seq_len(p.codon), Bin.size)),sum))
+        Bin.size2 <- c(0, cumsum(unname(bin.size2)))
+        names.bin <- lapply(split(seq_len(p),cut(seq_len(p), Bin.size2)),
+            function(x) paste(colnames(data1)[x[1]],
+            colnames(data1)[tail(x,n=1)], sep="-"))
+        colnames(data.bin) <- unname(names.bin)
+    } else {
+        data.bin <- matrix(0, nrow=n, ncol=1) # no reads
+        colnames(data.bin) <- paste(colnames(data1)[1],
+            tail(colnames(data1),n=1), sep="-")
+    }
+    if (zero.omit) data.bin <- data.bin[,colSums(data.bin) > 0, drop=FALSE]
+    if (is.vector(data.bin)){
+        data.bin <- matrix(data.bin, ncol=1) 
+        colnames(data.bin) <- paste(colnames(data1)[1],
+            tail(colnames(data1),n=1), sep="-")
+    } 
+    return(data.bin)
+}
+    
 .app2Exact <- function(n, p) {
     ## p=p[1:m] is an allocation, p[i] >=0, sum(p)=1
     ans <- floor(n * p)
@@ -404,6 +475,8 @@ diffPatternTestExon <- function(psitemap, classlabel, method=c("gtxr",
     result.dp$small <- names(noread)
     result.dp$data <- data
     result.dp$classlabel <- classlabel
+    tmp <- mapply(base::cbind,result.dp$bin,sgtf, SIMPLIFY = FALSE)
+    result.dp$bin <- tmp
     return(result.dp)
 }
 
@@ -442,6 +515,8 @@ diffPatternTestExon <- function(psitemap, classlabel, method=c("gtxr",
     })
     pvalue.gene <- do.call("c", lapply(res.bin, function(x) min(x[, method[1]],
         na.rm=TRUE)))
+    pvalue.gene <- sort(pvalue.gene)
+    genes.list <- names(pvalue.gene)
     message("done!\nGenome wide family control ...")
     ifelse(method[2] == "qvalue", padj.gene <- qvalue(pvalue.gene)$qvalues,
         padj.gene <- elitism::p.adjust(pvalue.gene, method=method[2]))
@@ -457,8 +532,7 @@ diffPatternTestExon <- function(psitemap, classlabel, method=c("gtxr",
     condition <- classlabel$comparison
     message("Exon binning ...\n")
     data.exon <- mapply(function(x, y) {
-        apply(y, 1, function(z) rowSums2(x, cols=seq(z[1], z[2])))
-    }, data, sgtf)
+    apply(y, 1, function(z) rowSums2(x, cols=seq(z[1], z[2])))}, data, sgtf)
     tvalue <- 1 - do.call("c", lapply(data.exon, function(x) {
         ifelse(ncol(x) == 1, 1, abs(sum(.svdSelf(x[which(condition == 1), ]) *
             .svdSelf(x[which(condition == 2), ]))))
@@ -500,7 +574,8 @@ diffPatternTestExon <- function(psitemap, classlabel, method=c("gtxr",
         pvalue=pvalue.gene[genes.list],padj=padj.gene[genes.list])
     colnames(gene.result)[3] <- method[2]
     message("done! \n")
-    return(list(bin=res.bin[genes.list], gene=gene.result, method=method))
+    return(list(bin=res.bin[genes.list], gene=gene.result, method=method,
+        exon=data.exon))
 }
 
 ## abundance estimation function
@@ -549,31 +624,38 @@ plotTrack <- function(data, genes.list, replicates=NULL, exons=FALSE) {
     for (gene in genes.list) {
         gplot[[gene]] <- NULL
         data0 <- data$coverage[[gene]]
+        nn <- nrow(data$exons[[gene]])
+        x.tick <- c(data$exons[[gene]][,1],data$exons[[gene]][nn,2])
+        x.label <- c(data$exons[[gene]][,3],data$exons[[gene]][nn,4])
         track0 <- NULL
         for (i in replicates) {
             rep.i <- data.frame(nt=seq_len(ncol(data0)), RPF=data0[i, ],
-                replicate=colnames(data$counts)[i])
+                                replicate=colnames(data$counts)[i])
             track0 <- rbind(track0, rep.i)
         }
         gplot[[gene]][["nt"]] <- ggplot(track0, aes(x=nt, y=RPF)) +
             geom_bar(stat="identity") + theme_minimal() +
             facet_wrap(~replicate, ncol=1) +
-            scale_x_continuous(breaks=c(1,ncol(data0))) +
+            scale_x_continuous(breaks=x.tick, labels =x.label) +
+            geom_vline(xintercept=x.tick, alpha=0.1)+
             ggtitle(paste("gene: ", gene, ", ", ncol(data0), " nt", sep="")) +
-            theme(plot.title=element_text(hjust=0.5))
+            theme(plot.title=element_text(hjust=0.5), 
+                    axis.text.x = element_text(angle = 45, vjust = 1, 
+                                            size = 8, hjust = 1))
         if (exons) {
             gplot[[gene]][["exon"]] <- NULL
             exons.gene <- data$exons[[gene]]
             for (j in seq_len(nrow(exons.gene))) {
                 exon <- rownames(exons.gene)[j]
                 track2 <- track0[track0$nt >= exons.gene[j, 1] & track0$nt <=
-                    exons.gene[j, 2], ]
+                                    exons.gene[j, 2], ]
                 gplot[[gene]][["exon"]][[exon]] <- ggplot(track2,
-                    aes(x=nt,y=RPF))+ geom_bar(stat="identity") +
-                    theme_minimal() + facet_wrap(~replicate,ncol=1) +
-                    scale_x_continuous(breaks=unname(exons.gene[j, ])) +
-                    ggtitle(paste("gene: ", gene, ", exon: ", exon, ", ",
-                    diff(exons.gene[j,]) + 1, " nt", sep="")) +
+                            aes(x=nt,y=RPF))+ geom_bar(stat="identity") +
+                theme_minimal() + facet_wrap(~replicate,ncol=1) +
+                scale_x_continuous(breaks = unname(unlist(exons.gene[j, 1:2])),
+                            labels = unname(unlist(exons.gene[j, 3:4]))) +
+                ggtitle(paste("gene: ", gene, ", exon: ", exon, ", ",
+                        diff(unlist(exons.gene[j,1:2])) + 1, " nt", sep="")) +
                     theme(plot.title=element_text(hjust=0.5))
             }
         }
@@ -587,36 +669,154 @@ plotTest <- function(result, genes.list=NULL, threshold=0.05) {
     classlabel <- result$classlabel[result$classlabel$comparison != 0, ]
     if (is.null(genes.list)) {
         genes.list <- rownames(result$gene[which(result$gene[, method[2]] <=
-            threshold),])
+                                                threshold),])
     }
-
     gplot <- NULL
     for (gene in genes.list) {
         data1 <- result$data[[gene]]
         tmp <- result$bin[[gene]][, method[1]]
         diff.spot <- which(tmp <= threshold)
         track1 <- data.frame()
-
         for (i in seq_len(nrow(classlabel))) {
             rep.i <- data.frame(bin=seq_len(ncol(data1)), RPF=data1[i, ],
-                replicate=rownames(classlabel)[i],
-                condition=classlabel$condition[i])
+                                replicate=rownames(classlabel)[i],
+                                condition=classlabel$condition[i])
             rep.i$condition <- as.character(rep.i$condition)
             rep.i[diff.spot, "condition"] <- "DP spot"
             track1 <- rbind(track1, rep.i)
         }
         rownames(track1) <- NULL
+        # name.track <- rownames(result$bin[[gene]])
         track1$replicate <- as.factor(track1$replicate)
         track1$replicate <- factor(track1$replicate,
-            levels(track1$replicate)[order(classlabel$comparison)])
+                    levels(track1$replicate)[order(classlabel$comparison)])
         gplot[[gene]] <- ggplot(track1, aes(x=bin, y=RPF, fill=condition)) +
             geom_bar(stat="identity") + theme_minimal() +facet_wrap(~replicate,
-            ncol=1) + scale_x_continuous(breaks=c(1, ncol(data1))) +
+                            ncol=1) + scale_x_continuous(breaks = diff.spot,
+                labels = formatC(tmp[diff.spot], format = "e", digits = 2)) +
             ggtitle(paste(gene,", ", method[2], " =", formatC(result$gene[gene,
                 method[2]], format="e", digits=2), ", T-value =",
                 formatC(result$gene[gene, "tvalue"], format="e", digits=2),
-                ", ", ncol(data1), " bins", sep="")) +
-            theme(plot.title=element_text(hjust=0.5))
+                        ", ", ncol(data1), " bins", sep="")) +
+            theme(plot.title=element_text(hjust=0.5), 
+                    axis.text.x = element_text(size = 8, 
+                                        angle = 90, vjust = 0.5, hjust=1))
     }
     return(gplot)
+}
+
+#### track output for genome browser ####
+binTrack <- function(data, exon.anno){
+    classlabel <- data$classlabel
+    track.bin <- vector(mode="list", length=nrow(classlabel))
+    names(track.bin) <- rownames(classlabel)
+    for(n.rep in seq_len(nrow(classlabel))){
+        track <- rownames(classlabel)[n.rep]
+        result.track <- GRanges(seqnames = NULL, ranges = NULL,
+            score = NULL, genes = NULL, tracks = NULL, bin = NULL)
+        for(gene in names(data$data)){
+            data.bin <- data$data[[gene]]
+            bin.range <- colnames(data.bin)
+            range.bin <- do.call(rbind, do.call(c, lapply(bin.range,
+                strsplit, split = '-')))
+            chr <- exon.anno[[gene]]$seqnames[1]
+            strand <- exon.anno[[gene]]$strand[1]
+            ifelse(strand=="+", {
+                starts <- as.integer(range.bin[,1])
+                ends <- as.integer(range.bin[,2])
+                exon.tmp <- data.table(start = exon.anno[[gene]][,3],
+                    end = exon.anno[[gene]][,4])
+            },{
+                ends <- as.integer(range.bin[,1])
+                starts <- as.integer(range.bin[,2])
+                exon.tmp <- data.table(start = exon.anno[[gene]][,4],
+                    end = exon.anno[[gene]][,3])
+            })
+            track.tmp <- data.table(start = starts, end = ends,
+                score = data$data[[gene]][n.rep,],
+                bin = seq_len(nrow(range.bin)),
+                padj = data$bin[[gene]][,3])
+            setkey(exon.tmp, start, end)
+            overlap.bin <- as.matrix(data.table::foverlaps(track.tmp,
+                exon.tmp, nomatch = 0L))
+            
+            track.gene <- GRanges(seqnames = chr, 
+                ranges=IRanges(start = overlap.bin[,3] - 1, 
+                end = overlap.bin[,4]), strand = strand,
+                score = overlap.bin[,5], genes = gene, tracks = track, 
+                bin = as.character(overlap.bin[,6]), padj = overlap.bin[,7])
+            exon.int <- GRanges(seqnames = chr, ranges = 
+                IRanges(start = overlap.bin[,1] - 1, end = overlap.bin[,2]))
+            track.gene <- pintersect(track.gene, exon.int)[,1:5]
+            result.track <- c(result.track, track.gene)
+        }
+        track.bin[[track]] <- result.track
+    }
+    return(track.bin)
+}
+
+bpTrack <- function(data, names.rep = NULL, genes.list = NULL){
+    if(is.null(names.rep)){
+        names.rep <- colnames(data$counts)
+    }
+    if(is.null(genes.list)){
+        genes.list <- names(data$coverage)
+    }
+    track.bp <- vector(mode = "list", length = length(names.rep))
+    names(track.bp) <- names.rep
+    for(n.rep in seq_len(length(names.rep))){
+        track <- names.rep[n.rep]
+        result.track <- GRanges(seqnames = NULL, ranges = NULL,
+            coverahe = NULL, genes = NULL)
+        for(gene in genes.list){
+            chr <- data$exons[[gene]]$seqnames[1]
+            strand <- data$exons[[gene]]$strand[1]
+            sites <- as.numeric(colnames(data$coverage[[gene]]))
+            coverages <- data$coverage[[gene]][n.rep,]
+            sites <- sites[which(coverages>0)]
+            coverages <- coverages[which(coverages>0)]
+            if(length(sites)){
+                track.gene <- GRanges(seqnames = chr, 
+                    ranges = IRanges(start = sites - 1, end = sites),
+                    strand = strand, coverage = coverages)
+                result.track <- c(result.track, track.gene)
+            }
+        }
+        track.bp[[track]] <- result.track
+    }
+    return(track.bp)
+}
+
+exonTrack <- function(data, gene){
+    classlabel <- data$classlabel
+    track.bin <- vector(mode = "list", length = nrow(classlabel))
+    names(track.bin) <- rownames(classlabel)
+    data.gene <- data$bin[[gene]]
+    txnames <- unique(data.gene[,"txname"])
+    strands <- data.gene[1, "strand"]
+    chr <- data.gene[1, "seqnames"]
+    for(n.rep in seq_len(nrow(classlabel))){
+        name.track <- rownames(classlabel)[n.rep]
+        track.bin[[name.track]] <- vector(mode = "list",
+            length = length(txnames))
+        names(track.bin[[name.track]]) <- txnames
+        for(tx in txnames){
+            data.tx <- data.gene[data.gene[,"txname"] == tx,]
+            ifelse(strands == "+", {
+                starts <- data.tx[,"start_genome"]
+                ends <- data.tx[,"end_genome"]
+            },{
+                ends <- data.tx[,"start_genome"]
+                starts <- data.tx[,"end_genome"]
+            })
+            track.tx <- GRanges(seqnames = chr, 
+                ranges = IRanges(start = starts - 1, end = ends - 1),
+                strand = strands,
+                score = data$exon[[gene]][n.rep, rownames(data.tx)], 
+                genes = gene, tracks = name.track, 
+                exon = rownames(data.tx))
+            track.bin[[name.track]][[tx]] <- track.tx
+        }
+    }
+    return(track.bin)
 }

@@ -14,7 +14,8 @@ function for differential pattern analysis.
 \usage{data("data.binned")}
 \format{
     A list of 885 matrices corresponding to 885 genes: in each matrix, rows 
-correspond to replicates, columns correspond to bins.
+correspond to replicates, columns correspond to bins. Bin names are set to
+"start-end" genomic coordinates.
 }
 \source{
 The raw data was  adapted from Kasari et al 2019.

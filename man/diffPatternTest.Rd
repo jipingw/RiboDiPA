@@ -41,22 +41,24 @@ from \code{qvalue} pacakge, "gtxr", "holm", "hochberg", "hommel",
 \item{bin}{A List object of codon/bin-level results. Each element 
 of list is of a gene, containing codon/bin results columns: \code{pvalue},
 \code{log2FoldChange}, and the adjusted p-value named by the first string 
-in \code{method}.
+in \code{method}. Names of Bins are set to "start-end" genomic coordinates.
 }
 \item{gene}{A DataFrame object of gene-level results. It contains columns:
 \code{tvalue}, \code{pvalue}, and the adjusted p-value named by the 
 second string in \code{method}.
 }
-\item{small}{Names of genes without sufficient reads}
-\item{classlabel}{
-The same as  input \code{classlabel}.
+\item{method}{
+The same as input \code{method}.
+}
+\item{small}{Names of genes without sufficient reads, not reported in
+\code{bin} and \code{gene}.
 }
 \item{data}{
 Subset of input \code{data}, including all genes reported in \code{bin} 
 and \code{gene}.
 }
-\item{method}{
-The same as input \code{method}.
+\item{classlabel}{
+The same as  input \code{classlabel}.
 }
 }
 \details{

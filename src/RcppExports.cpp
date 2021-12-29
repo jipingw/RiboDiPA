@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // psiteCal
 NumericVector psiteCal(CharacterVector cigar, IntegerVector start, IntegerVector psitemap);
 RcppExport SEXP _RiboDiPA_psiteCal(SEXP cigarSEXP, SEXP startSEXP, SEXP psitemapSEXP) {

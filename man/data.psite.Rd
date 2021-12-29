@@ -20,7 +20,7 @@ replicate.
 \item{counts}{ribosome P-site total count, one count per gene}
 \item{psite.mapping}{P-site mapping offset rule}
 \item{exons}{relative start and end positions of each exon in the total 
-transcript if a given gene}
+transcript if a given gene, as well as genomic start and end coordinates}
 }}
 \source{
 Raw data was adapted from Kasari et al 2019.
