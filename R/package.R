@@ -51,6 +51,7 @@ psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
         cores=cores)
     colnames(results_all$counts) <- names.sample
     # assign genomic coordinates as names of sites
+    results_all$coverage <- results_all$coverage[names(exons.coord)] ###########
     tmp <- mapply(.coordGene, results_all$coverage, exons.coord)
     results_all$coverage <- tmp
     results_all$exons <- exons.coord
@@ -337,10 +338,10 @@ psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     }
     colnames(range.relative) <- c("start_tranx", "end_tranx","start_genome",
         "end_genome")
-    range.relative <- as.data.frame(range.relative)
+    range.relative <- data.frame(range.relative) ###########
     range.relative$seqnames <- as.character(seqnames(x))
     range.relative$strand <- strands
-    range.relative$txname <- unlist(x$TXNAME)
+    range.relative$txname <- paste(sapply(x$TXNAME, paste, collapse=", ")) ###########
     return(range.relative)
 }
 
@@ -515,8 +516,8 @@ diffPatternTestExon <- function(psitemap, classlabel, method=c("gtxr",
     })
     pvalue.gene <- do.call("c", lapply(res.bin, function(x) min(x[, method[1]],
         na.rm=TRUE)))
-    pvalue.gene <- sort(pvalue.gene)
-    genes.list <- names(pvalue.gene)
+    pvalue.gene <- sort(pvalue.gene) ###########
+    genes.list <- names(pvalue.gene) ###########
     message("done!\nGenome wide family control ...")
     ifelse(method[2] == "qvalue", padj.gene <- qvalue(pvalue.gene)$qvalues,
         padj.gene <- elitism::p.adjust(pvalue.gene, method=method[2]))
@@ -568,6 +569,8 @@ diffPatternTestExon <- function(psitemap, classlabel, method=c("gtxr",
     })
     pvalue.gene <- do.call("c", lapply(res.bin, function(x)
         min(x[, method[1]], na.rm=TRUE)))
+    pvalue.gene <- sort(pvalue.gene)
+    genes.list <- names(pvalue.gene)
     ifelse(method[2] == "qvalue", padj.gene <- qvalue(pvalue.gene)$qvalues,
         padj.gene <- elitism::p.adjust(pvalue.gene,method=method[2]))
     gene.result <- data.frame(tvalue=tvalue[genes.list],
