@@ -30,7 +30,7 @@ psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
         bam_file_list)
     names.sample <- sub(".bam", "", names.sample)
     # Parse gtf file to create GRangesList object
-    txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file)
+    txdb <- txdbmaker::makeTxDbFromGFF(gtf_file)
     all_exons <- GenomicFeatures::exons(txdb, 
         columns=c("EXONNAME","TXNAME","GENEID"), use.names = TRUE)
     all_genes <- split(all_exons, unlist(values(all_exons)$GENEID))
