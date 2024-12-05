@@ -16,3 +16,13 @@ CHANGES IN VERSION 1.3.1
 
    o Functions to visualize tracks through genome browser igvr added
    o Functions to export ribo-seq tracks to external genome browser added
+
+
+CHANGES IN VERSION 1.9.1
+--------------------------
+
+   o Functions psiteMapping removes genes with 0 counts across all conditions as output
+
+CHANGES IN VERSION 1.15.1
+
+   o Rcpp function centerCPP.cpp was modified so it can take reads aligned to more than 10 consecutive regions in the genome. Ribo-seq read should typically align to no more than three consecutive blocks in the genome.

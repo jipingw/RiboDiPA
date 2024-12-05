@@ -30,7 +30,7 @@ psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
         bam_file_list)
     names.sample <- sub(".bam", "", names.sample)
     # Parse gtf file to create GRangesList object
-    txdb <- txdbmaker::makeTxDbFromGFF(gtf_file)
+    txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file)
     all_exons <- GenomicFeatures::exons(txdb, 
         columns=c("EXONNAME","TXNAME","GENEID"), use.names = TRUE)
     all_genes <- split(all_exons, unlist(values(all_exons)$GENEID))
@@ -211,7 +211,7 @@ psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
         cores <- detectCores(logical=FALSE)
     }
     for (k in seq_along(bam_file_list)) {
-        message("Computing coverage for", bam_file_list[k], "...")
+        message("Computing coverage for ", bam_file_list[k], "...")
         cl <- parallel::makeCluster(cores - 1)
         if (cores > 1) {
             registerDoParallel(cl)
@@ -266,8 +266,13 @@ psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
             ifelse(all(psite.mapping[1] == "center"),
                 gal3[, `:=`(psite, floor(qwidth/2))],
                 gal3 <- merge.data.table(gal3, psite.mapping, by="qwidth"))
-            gal3[strand == "-", `:=`(psite, qwidth - psite - 1)][, `:=`(center,
-                psiteCal(cigar, start, psite))]
+            
+            #gal3[strand == "-", `:=`(psite, qwidth - psite - 1)][, `:=`(center,
+            #    psiteCal(cigar, start, psite))]
+            gal3[strand == "-", `:=`(psite, qwidth - psite - 1)]
+            center_temp <- psiteCal(gal3$cigar, gal3$start, gal3$psite)
+            gal3[, `:=`(center,center_temp)]
+                                                                        
             gal3 <- gal3[center > 0, ]
             gal3[, `:=`(qwidth, 1)][, `:=`(width, 1)][, `:=`(njunc, 0)][,
                 `:=`(cigar, "1M")]
