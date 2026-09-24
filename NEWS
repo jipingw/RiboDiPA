@@ -26,3 +26,11 @@ CHANGES IN VERSION 1.9.1
 CHANGES IN VERSION 1.15.1
 
    o Rcpp function centerCPP.cpp was modified so it can take reads aligned to more than 10 consecutive regions in the genome. Ribo-seq read should typically align to no more than three consecutive blocks in the genome.
+
+
+CHANGES IN VERSION 1.21.1
+--------------------------
+
+   o Fixed vignette build error with recent data.table: Bioconductor
+     objects (GAlignments, GRanges, GRangesList) are now converted with
+     as.data.frame() before as.data.table()

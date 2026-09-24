@@ -96,10 +96,14 @@ psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     utr3 <- suppressWarnings(GenomicFeatures::threeUTRsByTranscript(txdb,
         use.names=TRUE))
 
-    exon <- data.table::as.data.table(exon[unique(names(exon))])
-    utr5 <- data.table::as.data.table(utr5[unique(names(utr5))])
-    cds <- data.table::as.data.table(cds[unique(names(cds))])
-    utr3 <- data.table::as.data.table(utr3[unique(names(utr3))])
+    exon <- data.table::as.data.table(
+        as.data.frame(exon[unique(names(exon))]))
+    utr5 <- data.table::as.data.table(
+        as.data.frame(utr5[unique(names(utr5))]))
+    cds <- data.table::as.data.table(
+        as.data.frame(cds[unique(names(cds))]))
+    utr3 <- data.table::as.data.table(
+        as.data.frame(utr3[unique(names(utr3))]))
 
     anno_df <- exon[, list(l_tr=sum(width)), by=list(transcript=group_name)]
     l_utr5 <- utr5[, list(l_utr5=sum(width)), by=list(transcript=group_name)]
@@ -121,7 +125,7 @@ psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
     annotation <- .createAnno(txdb)
     all_tx <- GenomicFeatures::exonsBy(txdb, by="tx", use.names=TRUE)
     name.tx <- names(unlist(all_tx))
-    all_tmp <- data.table::as.data.table(all_tx)
+    all_tmp <- data.table::as.data.table(as.data.frame(all_tx))
     all_tmp[, `:=`(start, start - 30)][, `:=`(end, end + 30)][, `:=`(width,
         width + 60)]
     all_tmp <- GRanges(all_tmp)
@@ -132,7 +136,8 @@ psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
         data <- GenomicAlignments::readGAlignments(bam)
         qwidth.data <- qwidth(data)
         data <- GenomicRanges::granges(data)
-        data <- as.data.table(GenomicFeatures::mapToTranscripts(data, all_tmp))
+        data <- as.data.table(as.data.frame(
+            GenomicFeatures::mapToTranscripts(data, all_tmp)))
         data[, `:=`(start, start - 30)][, `:=`(end, end - 30)]
         data$width <- qwidth.data[data$xHits]
 
@@ -263,7 +268,7 @@ psiteMapping <- function(bam_file_list, gtf_file, psite.mapping="auto",
         gal2 <- gal2[strand(gal2) != "*"]
         gal2 <- gal2[is.na(seqnames(gal2)) == FALSE]
         if (length(gal2)) {
-            gal3 <- as.data.table(gal2)
+            gal3 <- as.data.table(as.data.frame(gal2))
             ifelse(all(psite.mapping[1] == "center"),
                 gal3[, `:=`(psite, floor(qwidth/2))],
                 gal3 <- merge.data.table(gal3, psite.mapping, by="qwidth"))
